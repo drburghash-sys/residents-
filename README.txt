@@ -33,3 +33,11 @@ FOLLOW-UP CREDIT RULES IMPLEMENTED
 
 PRIVACY
 The app stores data locally in the browser/PWA storage on your device. Use Backup regularly.
+
+
+V5 UPDATE
+- WhatsApp follow-up messages contain CURRENT PENDING REQUIREMENTS ONLY.
+- Completed requirements disappear from the next shared message.
+- The first valid resident message that changes an item from PENDING to DONE receives +1 credit.
+- Later duplicate DONE reports for the same item receive 0 credit.
+- After processing a resident update, the app offers Share Updated Pending List.
