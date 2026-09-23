@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0f4c5c"/>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <link rel="apple-touch-icon" href="./icon-192.png"/>
-<title>Resident Case Tracker V4</title>
+<title>Resident Case Tracker V5</title>
 <style>
 :root{
   --bg:#f3f7f8;--card:#fff;--ink:#17323a;--muted:#6d7d82;--primary:#0f4c5c;--primary2:#1d6b7b;
@@ -160,7 +160,7 @@ textarea{min-height:95px;resize:vertical}.section-title{margin:18px 0 8px;font-w
 
 <div class="modal" id="shareModal"><div class="sheet">
   <div class="row"><h2>WhatsApp Follow-up Form</h2><button class="btn secondary" onclick="closeModal('shareModal')">Close</button></div>
-  <div class="note">Resident writes their name and changes only the items they completed to DONE. They can also add ADD_LAB=... or ADD_IMAGING=... when a new requirement is discovered.</div>
+  <div class="note">Only the CURRENT missing requirements are shared. The first valid resident reply that changes an item from PENDING to DONE receives the credit. Completed items disappear from the next shared list.</div>
   <textarea id="shareText" class="codebox" readonly></textarea>
   <div class="footer-actions"><button class="btn dark" onclick="copyShare()">Copy</button><button class="btn secondary" onclick="nativeShare()">Share</button></div>
 </div></div>
@@ -171,6 +171,18 @@ textarea{min-height:95px;resize:vertical}.section-title{margin:18px 0 8px;font-w
   <div class="footer-actions"><button class="btn dark" onclick="processManual()">Process Message</button></div>
 </div></div>
 
+<div class="modal" id="postUpdateModal"><div class="sheet">
+  <div class="row">
+    <h2>Update Processed</h2>
+    <button class="btn secondary" onclick="closeModal('postUpdateModal')">Close</button>
+  </div>
+  <div id="postUpdateSummary" class="note"></div>
+  <div class="footer-actions">
+    <button class="btn dark" onclick="shareUpdatedPending()">Share Updated Pending List</button>
+    <button class="btn secondary" onclick="closeModal('postUpdateModal')">Done</button>
+  </div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -179,7 +191,7 @@ const SKEY="rct_v4_state";
 let state=JSON.parse(localStorage.getItem(SKEY)||"null")||{
   cases:[], residents:{}, events:[], inbox:[], dailyAvailability:{}
 };
-let currentFilter="all",activeCaseId="";
+let currentFilter="all",activeCaseId="",lastProcessedCaseId="";
 
 function persist(){localStorage.setItem(SKEY,JSON.stringify(state))}
 function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -240,7 +252,7 @@ function renderCases(){
       <div class="meta"><div><b>Training Level</b>${esc(c.level)}</div><div><b>Operation Date</b>${esc(c.targetDate||"Not set")}</div></div>
       <div class="progress"><i style="width:${r.pct}%"></i></div>
       <div class="missing">${r.ready?"All requirements complete.":"Missing: "+esc(caseMissing(c).join(", ")||"—")}</div>
-      <div class="actions"><button class="btn secondary" onclick="openShare('${c.id}')">Group Form</button><button class="btn secondary" onclick="openManual('${c.id}')">Import Message</button><button class="btn secondary" onclick="openCase('${c.id}')">Open / Edit</button></div>
+      <div class="actions"><button class="btn secondary" onclick="openShare('${c.id}')">Share Pending List</button><button class="btn secondary" onclick="openManual('${c.id}')">Import Message</button><button class="btn secondary" onclick="openCase('${c.id}')">Open / Edit</button></div>
       ${contrib.length?`<div class="timeline">${contrib.map(e=>`<div class="event">+1 ${esc(e.resident)} — ${esc(e.detail)}</div>`).join("")}</div>`:""}
     </div>`;
   }).join(""):'<div class="empty">No cases yet.</div>';
@@ -331,14 +343,45 @@ function saveCase(){
 function deleteCase(){let id=editId.value;if(id&&confirm("Delete this case?")){state.cases=state.cases.filter(x=>x.id!==id);persist();closeModal("caseModal");renderAll()}}
 
 function buildForm(c){
-  let txt=`CASE_ID=${c.id}\nRESIDENT_NAME=\nDATE=\n\n`;
-  BASE.forEach(k=>txt+=`${k}=${(c.reqs?.[k]||"pending").toUpperCase()}\n`);
-  (c.labs||[]).forEach((x,i)=>txt+=`LAB_${i+1}_${x.name}=${x.status.toUpperCase()}\n`);
-  (c.imaging||[]).forEach((x,i)=>txt+=`IMG_${i+1}_${x.name}=${x.status.toUpperCase()}\n`);
-  txt+=`\nADD_LAB=\nADD_IMAGING=\nNOTES=\n\nUse DONE only for items you personally completed.`;
+  let pending=[];
+  BASE.forEach(k=>{if((c.reqs?.[k]||"pending")==="pending")pending.push({key:k,label:k})});
+  (c.labs||[]).forEach((x,i)=>{if(x.status==="pending")pending.push({key:`LAB_${i+1}_${x.name}`,label:x.name})});
+  (c.imaging||[]).forEach((x,i)=>{if(x.status==="pending")pending.push({key:`IMG_${i+1}_${x.name}`,label:x.name})});
+
+  if(!pending.length){
+    return `CASE_ID=${c.id}
+STATUS=READY FOR OR
+
+No pending requirements.`;
+  }
+
+  let txt=`CASE_ID=${c.id}
+RESIDENT_NAME=
+DATE=
+
+PENDING REQUIREMENTS:
+`;
+  pending.forEach(x=>txt+=`${x.key}=PENDING\n`);
+  txt+=`
+ADD_LAB=
+ADD_IMAGING=
+NOTES=
+
+Change ONLY items you found completed from PENDING to DONE.
+The first valid DONE update received for each item gets the credit.`;
   return txt
 }
 function openShare(id){let c=state.cases.find(x=>x.id===id);if(!c)return;activeCaseId=id;shareText.value=buildForm(c);shareModal.classList.add("show")}
+function showPostUpdate(caseId,message){
+  lastProcessedCaseId=caseId||"";
+  postUpdateSummary.textContent=message||"Update processed.";
+  postUpdateModal.classList.add("show");
+}
+function shareUpdatedPending(){
+  if(!lastProcessedCaseId)return;
+  closeModal("postUpdateModal");
+  openShare(lastProcessedCaseId);
+}
 async function copyText(t){try{await navigator.clipboard.writeText(t)}catch(e){let ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove()}}
 async function copyShare(){await copyText(shareText.value);toastMsg("Form copied")}
 async function nativeShare(){if(navigator.share){try{await navigator.share({title:"Case Follow-up Form",text:shareText.value})}catch(e){}}else{await copyShare()}}
@@ -364,7 +407,7 @@ function processIncoming(text,source="share"){
     if(!c)return storeInbox(text,"Post-op message: case not identified");
     let resident=(kv.OPERATED_BY||kv.RESIDENT_NAME||kv.RESIDENT||findResidentInFreeText(text)).trim();
     if(!resident)return storeInbox(text,"Post-op message: resident not identified");
-    if(c.postOpProcessed)return {ok:true,message:"Post-op already recorded; duplicate ignored"};
+    if(c.postOpProcessed)return {ok:true,caseId:c.id,message:"Post-op already recorded; duplicate ignored"};
     ensureResident(resident);
     event("operation_done",resident,c.id,-1,"Operation performed");
     let missed=(c.assignment?.missedResident||"").trim();
@@ -372,7 +415,7 @@ function processIncoming(text,source="share"){
       event("missed_comp",missed,c.id,+1,"Missed priority due to duty/leave");
     }
     c.postOpProcessed=true;c.actualOperator=resident;c.completedAt=new Date().toISOString();
-    persist();renderAll();return {ok:true,message:`Post-op recorded: ${resident} -1${missed&&missed!==resident?`; ${missed} +1 compensation`:""}`}
+    persist();renderAll();return {ok:true,caseId:c.id,message:`Post-op recorded: ${resident} -1${missed&&missed!==resident?`; ${missed} +1 compensation`:""}`}
   }
 
   if(!c)return storeInbox(text,"Case not identified");
@@ -392,31 +435,47 @@ function processIncoming(text,source="share"){
   if((kv.ADD_LAB||"").trim()){let n=kv.ADD_LAB.trim();if(!(c.labs||[]).some(x=>x.name.toLowerCase()===n.toLowerCase())){c.labs ||= [];c.labs.push({name:n,status:"pending"})}}
   if((kv.ADD_IMAGING||"").trim()){let n=kv.ADD_IMAGING.trim();if(!(c.imaging||[]).some(x=>x.name.toLowerCase()===n.toLowerCase())){c.imaging ||= [];c.imaging.push({name:n,status:"pending"})}}
   c.lastUpdate=new Date().toISOString();persist();renderAll();
-  return {ok:true,message:credits?`${resident}: +${credits} credit (${details.join(", ")})`:`Case updated; no new credit`}
+  return {ok:true,caseId:c.id,message:credits?`${resident}: +${credits} credit (${details.join(", ")})`:`Case updated; no new credit`}
 }
 function storeInbox(text,reason){
   let item={id:"i"+Date.now(),text,reason,at:new Date().toISOString()};state.inbox.push(item);persist();renderInbox();return {ok:false,reason}
 }
-function processManual(){let r=processIncoming(manualText.value,"manual");closeModal("manualImportModal");toastMsg(r.message||r.reason||"Processed")}
+function processManual(){
+  let r=processIncoming(manualText.value,"manual");
+  closeModal("manualImportModal");
+  if(r.ok && r.caseId){
+    let c=state.cases.find(x=>x.id===r.caseId);
+    if(c && !c.postOpProcessed) showPostUpdate(r.caseId,r.message||"Update processed.");
+    else toastMsg(r.message||"Processed");
+  }else{
+    toastMsg(r.reason||"Needs review");
+  }
+}
 function handleSharedLaunch(){
   let u=new URL(location.href),text=[u.searchParams.get("title"),u.searchParams.get("text"),u.searchParams.get("url")].filter(Boolean).join("\n").trim();
   if(text){
     let r=processIncoming(text,"share");
     history.replaceState({},document.title,location.pathname);
-    toastMsg(r.message||r.reason||"Shared message processed");
-    if(!r.ok)showTab("inbox");
+    if(r.ok && r.caseId){
+      let c=state.cases.find(x=>x.id===r.caseId);
+      if(c && !c.postOpProcessed) showPostUpdate(r.caseId,r.message||"Shared message processed");
+      else toastMsg(r.message||"Shared message processed");
+    }else{
+      toastMsg(r.reason||"Needs review");
+      showTab("inbox");
+    }
   }
 }
 
 function exportData(){
-  let blob=new Blob([JSON.stringify({format:"ResidentCaseTrackerV4",exportedAt:new Date().toISOString(),state},null,2)],{type:"application/json"});
-  let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Resident_Case_Tracker_V4_Backup.json";a.click();URL.revokeObjectURL(a.href)
+  let blob=new Blob([JSON.stringify({format:"ResidentCaseTrackerV5",exportedAt:new Date().toISOString(),state},null,2)],{type:"application/json"});
+  let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Resident_Case_Tracker_V5_Backup.json";a.click();URL.revokeObjectURL(a.href)
 }
 function importData(e){
   let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);if(!d.state)throw 0;state=d.state;persist();renderAll();toastMsg("Restore completed")}catch{alert("Invalid backup file")}};r.readAsText(f);e.target.value=""
 }
 
-["caseModal","shareModal","manualImportModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)closeModal(id)}));
+["caseModal","shareModal","manualImportModal","postUpdateModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)closeModal(id)}));
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
 persist();renderAll();handleSharedLaunch();
 </script>
