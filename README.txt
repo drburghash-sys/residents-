@@ -1,40 +1,61 @@
-General Surgery Resident Case Ownership — V1
+Unified General Surgery Pathway + Resident Distribution — V1
 
-CURRENT WORKFLOW
-- A surgical case has exactly ONE resident owner.
-- New cases can be added manually or imported from a coordination PDF/text.
-- Distribution only touches UNASSIGNED cases. It never takes an active case away from its current resident.
-- The algorithm first raises residents with lower active loads until loads become equal.
-- Once all active resident loads are equal, a full equal layer is assigned only when there are enough cases for EVERY active resident.
-- Any remainder stays UNASSIGNED as "consultant decision surplus" for manual assignment.
-- Resident order can be changed; it is used as the stable tie-break order.
+PURPOSE
+This repository now contains one simplified single-user workflow that replaces the separate Surgical Pathway / coordinator-readiness / resident case tracker workflow.
 
-CASE LIFECYCLE
-1) UNASSIGNED
-2) ASSIGNED / under preparation
-3) READY — preparation complete and the case remains fixed to that resident
-4) DONE — operation completed by that resident
-If the resident fails to prepare/keep the case, it becomes CONSULTANT ONLY and is never reassigned to another resident.
+CURRENT DATA
+- 24 active cases were seeded from the readiness report supplied on 2026-09-28.
+- Their readiness counts match that report:
+  DSU: 4 ready, 2 waiting for signature, 0 not ready.
+  Elective: 5 ready, 4 waiting for signature, 9 not ready.
+- Historical cases from the supplied Surgical Pathway APK backup are retained as archived seed records.
+- On first launch, the app also attempts to migrate the resident roster and matching case ownership from the previous resident tracker localStorage on the same GitHub Pages origin.
 
-REPLACEMENT
-- Optional automatic replacement is enabled by default.
-- After a resident completes the operation, the first currently unassigned case can be assigned to the same resident as a replacement.
-- Failed cases do NOT automatically generate a replacement; they are handled at the next fair distribution.
+ONE PATIENT RECORD
+Each patient record contains:
+- Patient name and MRN
+- DSU or Elective pathway
+- Diagnosis and procedure
+- Preparation checklist: CXR, Blood, Virology, Consultations, Anesthesia, ECG, Documents/signature
+- Resident ownership
+- Operation outcome and history
 
-PDF IMPORT
-- PDF text is read locally in the browser using PDF.js.
-- The import screen always requires review before cases are committed.
-- If PDF text order is poor, paste the coordination-program text into the same importer and re-parse.
-- No PDF is uploaded by this static GitHub Pages app.
+READINESS
+- Ready: no required item remains incomplete.
+- Waiting for signature: the only missing item is documents/signature.
+- Not ready: at least one other required item remains incomplete.
+
+RESIDENT RULES
+- One case has one resident owner only.
+- Cases already owned are never taken away during redistribution.
+- Resident reply is entered manually by the consultant: complete all, partial completion, or failed preparation.
+- Failed preparation converts the case to Consultant Only. It is not reassigned to another resident and gives no compensation.
+- Completed operation normally releases the case and, when enabled, immediately assigns the resident one unassigned replacement case.
+- If the resident prepared the case but misses the operation because of on-call, post-call, clinic, official duty, or official leave, the resident receives +1 compensation case in addition to the normal replacement logic.
+- Compensation cases are assigned before ordinary fair balancing.
+- Ordinary distribution then raises residents with lower current case loads. A remainder that cannot be assigned as a complete fairness layer stays unassigned for consultant decision.
+
+WHATSAPP
+Residents do not use the app.
+The Reports screen creates ONE group message containing:
+- Resident case-count summary
+- Ready count
+- Operations count
+- Compensation balance
+- Every resident and all of that resident's current cases with MRN, diagnosis, operation and current missing requirements
+- Unassigned and Consultant Only counts
+The consultant shares this one message to the residents' WhatsApp group and enters their replies manually into the app.
+
+REPORTS
+- Group distribution message
+- Readiness report in the previous DSU/Elective coordinator-report style
+- Activity history
 
 STORAGE
-- Data is stored in localStorage on the device.
-- Backup exports a JSON snapshot.
-- The previous V5 localStorage data is not deleted. On first launch of this version, residents and old cases are migrated into the new data model.
+- Single-device localStorage workflow; no Firebase is required because residents do not use the app.
+- JSON backup/restore is available in Settings.
+- Previous resident-app data is not deleted.
 
-BACKUP OF PREVIOUS VERSION
-- Git branch: backup-v5-before-case-ownership
-
-MULTI-DEVICE NOTE
-- This build is an administrator/device-local workflow.
-- Direct resident updates from separate phones require a shared backend such as Firebase; localStorage alone cannot synchronize multiple devices safely.
+BACKUP BRANCHES
+- backup-v5-before-case-ownership
+- backup-before-unified-surgery-20260928
