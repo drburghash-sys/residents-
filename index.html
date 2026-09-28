@@ -18,6 +18,7 @@
     <button id="tabCases" class="tab" onclick="showTab('cases')">الحالات</button>
     <button id="tabResidents" class="tab" onclick="showTab('residents')">المقيمون</button>
     <button id="tabOperations" class="tab" onclick="showTab('operations')">العمليات</button>
+    <button id="tabMonthly" class="tab" onclick="showTab('monthly')">التقرير الشهري</button>
     <button id="tabReports" class="tab" onclick="showTab('reports')">التقارير</button>
   </div>
 
@@ -42,6 +43,9 @@
       <button class="chip active" data-f="active" onclick="setCaseFilter(this)">الحالية</button>
       <button class="chip" data-f="day" onclick="setCaseFilter(this)">DSU</button>
       <button class="chip" data-f="elective" onclick="setCaseFilter(this)">Elective</button>
+      <button class="chip" data-f="inpatient" onclick="setCaseFilter(this)">Inpatient</button>
+      <button class="chip" data-f="emergency" onclick="setCaseFilter(this)">Emergency</button>
+      <button class="chip" data-f="minor" onclick="setCaseFilter(this)">Minor</button>
       <button class="chip" data-f="notready" onclick="setCaseFilter(this)">غير جاهز</button>
       <button class="chip" data-f="signature" onclick="setCaseFilter(this)">انتظار توقيع</button>
       <button class="chip" data-f="ready" onclick="setCaseFilter(this)">جاهز</button>
@@ -70,6 +74,19 @@
     <div id="operationsList"></div>
   </section>
 
+  <section id="monthlySection" style="display:none">
+    <div class="card">
+      <div class="row"><div><div class="name">التقرير الشهري للعمليات</div><div class="sub">نفس تقرير الإحصائيات السابق، ويتحدث تلقائيًا من العمليات المسجلة.</div></div>
+      <div class="field monthPick"><label>الشهر</label><input id="monthlyMonth" type="month" onchange="renderMonthlyReport()"></div></div>
+    </div>
+    <div id="monthlyStats" class="monthlyStats"></div>
+    <div class="card">
+      <div class="row"><div class="name">Procedure Summary</div><div id="monthlyOrHours" class="sub">OR Utilization: 0 hours</div></div>
+      <div class="monthlyTableWrap"><table class="monthlyTable"><thead><tr><th>Procedure</th><th>Number of Cases</th><th>Points</th></tr></thead><tbody id="monthlyProcedureRows"></tbody></table></div>
+    </div>
+    <div class="card"><div class="name">Completed Cases</div><div id="monthlyCaseList" class="miniList" style="margin-top:10px"></div></div>
+  </section>
+
   <section id="reportsSection" style="display:none">
     <div class="split">
       <div class="card"><div class="row"><div><div class="name">رسالة قروب المقيمين</div><div class="sub">ملخص العدد + جميع المقيمين وحالاتهم ونواقصهم في رسالة واحدة.</div></div></div><textarea id="groupReport" class="reportbox" readonly></textarea><div class="actions"><button class="btn dark" onclick="shareGroupReport()">إرسال/مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('groupReport')">نسخ</button></div></div>
@@ -85,7 +102,7 @@
   <div class="grid" style="margin-top:12px">
     <div class="field"><label>اسم المريض</label><input id="patientName"></div>
     <div class="field"><label>رقم الملف MRN</label><input id="mrn"></div>
-    <div class="field"><label>المسار</label><select id="pathway"><option value="day">DSU / Day Surgery</option><option value="elective">Elective</option></select></div>
+    <div class="field"><label>المسار</label><select id="pathway"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="emergency">Emergency</option><option value="minor">Minor</option></select></div>
     <div class="field"><label>المقيم المسؤول</label><select id="caseResident"></select></div>
     <div class="field"><label>التشخيص</label><input id="diagnosis"></div>
     <div class="field"><label>العملية</label><input id="procedure"></div>
@@ -107,6 +124,12 @@
   <div id="operationCaseInfo" class="note info"></div>
   <div class="field"><label>النتيجة</label><select id="operationOutcome" onchange="renderOperationReason()"><option value="owner">أجراها صاحب الحالة</option><option value="official_miss">صاحب الحالة حُرم بعذر رسمي وأجراها غيره</option><option value="consultant">أجراها الاستشاري</option></select></div>
   <div id="officialReasonWrap" style="display:none;margin-top:10px"><div class="field"><label>سبب الحرمان الرسمي</label><select id="officialReason"><option>مناوبة</option><option>Post-call</option><option>عيادة</option><option>تكليف رسمي</option><option>إجازة رسمية</option></select></div></div>
+  <div class="grid" style="margin-top:10px">
+    <div class="field"><label>العملية الفعلية</label><input id="operationProcedure"></div>
+    <div class="field"><label>استخدام غرفة العمليات بالدقائق</label><input id="orDurationMinutes" type="number" min="0" step="5" placeholder="اختياري"></div>
+  </div>
+  <div id="emergencyStatsWrap" class="field" style="display:none;margin-top:10px"><label>Emergency Optimization</label><select id="emergencyOptimization" onchange="renderOperationReason()"><option value="optimized">Optimized — 3 points</option><option value="non_optimized">Non-Optimized — 4 points</option></select></div>
+  <div id="operationPointPreview" class="note info">النقاط: 2</div>
   <div class="field" style="margin-top:10px"><label>من أجرى العملية فعليًا (اختياري)</label><input id="actualOperator" placeholder="اسم المقيم الآخر أو Consultant"></div>
   <div class="footer-actions"><button class="btn dark" onclick="confirmOperation()">تسجيل العملية</button></div>
 </div></div>
