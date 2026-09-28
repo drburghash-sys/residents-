@@ -316,19 +316,19 @@ function caseCard(c){
   const owner=c.owner||c.previousOwner||"—";
   let action="";
   if(c.status==="unassigned"){
-    action='<button class="btn dark" onclick="openAssign(\\''+c.id+'\\')">تعيين لمقيم</button>';
+    action='<button class="btn dark" onclick="openAssign(\''+c.id+'\')">تعيين لمقيم</button>';
   }else if(c.status==="assigned"){
-    action='<button class="btn ok" onclick="markReady(\\''+c.id+'\\')">اكتمل التجهيز</button><button class="btn danger" onclick="markFailed(\\''+c.id+'\\')">لم يُكملها</button>';
+    action='<button class="btn ok" onclick="markReady(\''+c.id+'\')">اكتمل التجهيز</button><button class="btn danger" onclick="markFailed(\''+c.id+'\')">لم يُكملها</button>';
   }else if(c.status==="ready"){
-    action='<button class="btn dark" onclick="finishResidentCase(\\''+c.id+'\\')">تمت العملية</button><button class="btn danger" onclick="markFailed(\\''+c.id+'\\')">سحبها للاستشاري</button>';
+    action='<button class="btn dark" onclick="finishResidentCase(\''+c.id+'\')">تمت العملية</button><button class="btn danger" onclick="markFailed(\''+c.id+'\')">سحبها للاستشاري</button>';
   }else if(c.status==="consultant"){
-    action='<button class="btn dark" onclick="finishConsultantCase(\\''+c.id+'\\')">تمت العملية بواسطة الاستشاري</button>';
+    action='<button class="btn dark" onclick="finishConsultantCase(\''+c.id+'\')">تمت العملية بواسطة الاستشاري</button>';
   }
   return '<div class="card">'+
     '<div class="row"><div><div class="name">'+esc(caseDisplay(c))+(c.operation?' — '+esc(c.operation):'')+'</div><div class="sub">'+esc(c.diagnosis||"بدون تشخيص مدخل")+' · '+esc(c.id)+'</div></div><span class="badge '+c.status+'">'+statusLabel(c.status)+'</span></div>'+
     '<div class="meta"><div><b>صاحب الحالة</b>'+esc(owner)+'</div><div><b>موعد متوقع</b>'+esc(c.surgeryDate||"—")+'</div><div><b>المصدر</b>'+esc(c.sourceBatch||"—")+'</div></div>'+
-    '<div class="missing">'+(misses.length?misses.map((m,i)=>'<button class="miss '+(m.done?'done':'')+'" onclick="toggleMissing(\\''+c.id+'\\','+i+')" '+((c.status==="done"||c.status==="consultant")?'disabled':'')+'>'+esc(m.text)+'</button>').join(""):'<span class="sub">لا توجد نواقص مسجلة</span>')+'</div>'+
-    '<div class="actions">'+action+'<button class="btn secondary" onclick="openCase(\\''+c.id+'\\')">تعديل</button></div>'+
+    '<div class="missing">'+(misses.length?misses.map((m,i)=>'<button class="miss '+(m.done?'done':'')+'" onclick="toggleMissing(\''+c.id+'\','+i+')" '+((c.status==="done"||c.status==="consultant")?'disabled':'')+'>'+esc(m.text)+'</button>').join(""):'<span class="sub">لا توجد نواقص مسجلة</span>')+'</div>'+
+    '<div class="actions">'+action+'<button class="btn secondary" onclick="openCase(\''+c.id+'\')">تعديل</button></div>'+
   '</div>';
 }
 function toggleMissing(id,i){const c=state.cases.find(x=>x.id===id);if(!c||!c.missing?.[i])return;c.missing[i].done=!c.missing[i].done;logEvent("missing",c,c.owner,c.missing[i].text+" = "+(c.missing[i].done?"تم":"غير مكتمل"));renderAll()}
@@ -337,7 +337,7 @@ function renderDistribution(){
   const rs=activeResidents();
   loadBoard.innerHTML=rs.length?rs.map((r,i)=>'<div class="resRow"><span>'+(i+1)+'</span><b>'+esc(r.name)+'</b><span class="load">'+activeLoad(r.name)+'</span><span>'+residentDone(r.name)+'</span><span>'+residentFails(r.name)+'</span><span class="hideMobile">'+(r.active?"نشط":"موقوف")+'</span></div>').join(""):'<div class="empty">أضف المقيمين أولًا.</div>';
   const extra=unassignedCases();
-  surplusList.innerHTML=extra.length?extra.map(c=>'<div class="card" style="box-shadow:none;margin-top:10px"><div class="row"><div><b>'+esc(caseDisplay(c))+'</b><div class="sub">'+esc(c.diagnosis||"")+'</div></div><button class="btn warn" onclick="openAssign(\\''+c.id+'\\')">تعيين الزيادة</button></div></div>').join(""):'<div class="empty">لا توجد زيادة غير موزعة.</div>';
+  surplusList.innerHTML=extra.length?extra.map(c=>'<div class="card" style="box-shadow:none;margin-top:10px"><div class="row"><div><b>'+esc(caseDisplay(c))+'</b><div class="sub">'+esc(c.diagnosis||"")+'</div></div><button class="btn warn" onclick="openAssign(\''+c.id+'\')">تعيين الزيادة</button></div></div>').join(""):'<div class="empty">لا توجد زيادة غير موزعة.</div>';
 }
 function distributeFair(){
   const rs=activeResidents();
@@ -527,12 +527,12 @@ function parseRawText(source=""){
 }
 function renderImportPreview(){
   importPreview.innerHTML=importDrafts.length?importDrafts.map((d,i)=>
-    '<div class="draft"><div class="row"><b>حالة '+(i+1)+'</b><label class="switch"><input type="checkbox" '+(d.selected?'checked':'')+' onchange="draftSet('+i+',\\'selected\\',this.checked)">إضافة</label></div>'+
-    '<div class="grid"><div class="field"><label>MRN</label><input value="'+esc(d.mrn)+'" oninput="draftSet('+i+',\\'mrn\\',this.value)"></div>'+
-    '<div class="field"><label>التشخيص</label><input value="'+esc(d.diagnosis)+'" oninput="draftSet('+i+',\\'diagnosis\\',this.value)"></div>'+
-    '<div class="field"><label>العملية</label><input value="'+esc(d.operation)+'" oninput="draftSet('+i+',\\'operation\\',this.value)"></div>'+
-    '<div class="field"><label>المصدر</label><input value="'+esc(d.sourceBatch)+'" oninput="draftSet('+i+',\\'sourceBatch\\',this.value)"></div></div>'+
-    '<div class="field"><label>النواقص — سطر لكل نقص</label><textarea oninput="draftSet('+i+',\\'missing\\',this.value)">'+esc(d.missing)+'</textarea></div>'+
+    '<div class="draft"><div class="row"><b>حالة '+(i+1)+'</b><label class="switch"><input type="checkbox" '+(d.selected?'checked':'')+' onchange="draftSet('+i+',\'selected\',this.checked)">إضافة</label></div>'+
+    '<div class="grid"><div class="field"><label>MRN</label><input value="'+esc(d.mrn)+'" oninput="draftSet('+i+',\'mrn\',this.value)"></div>'+
+    '<div class="field"><label>التشخيص</label><input value="'+esc(d.diagnosis)+'" oninput="draftSet('+i+',\'diagnosis\',this.value)"></div>'+
+    '<div class="field"><label>العملية</label><input value="'+esc(d.operation)+'" oninput="draftSet('+i+',\'operation\',this.value)"></div>'+
+    '<div class="field"><label>المصدر</label><input value="'+esc(d.sourceBatch)+'" oninput="draftSet('+i+',\'sourceBatch\',this.value)"></div></div>'+
+    '<div class="field"><label>النواقص — سطر لكل نقص</label><textarea oninput="draftSet('+i+',\'missing\',this.value)">'+esc(d.missing)+'</textarea></div>'+
     (!d.mrn&&!d.diagnosis?'<div class="note">لم أتعرف على بنية هذه القطعة تلقائيًا؛ راجعها أو ألغ اختيارها.</div>':'')+
     '</div>'
   ).join(""):'<div class="empty">لا يوجد نص قابل للتحليل بعد.</div>';
