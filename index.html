@@ -70,7 +70,12 @@
   </section>
 
   <section id="operationsSection" style="display:none">
-    <div class="card"><div class="name">جاهز للعملية</div><div class="sub">الحالات الجاهزة والمملوكة لمقيم، ثم حالات الاستشاري فقط.</div></div>
+    <div class="card">
+      <div class="row"><div><div class="name">العمليات</div><div class="sub">لا تدخل الحالة في التقرير الشهري إلا بعد الضغط على «تمت العملية».</div></div>
+      <button class="btn danger" onclick="openEmergencyOperation()">+ تسجيل عملية طوارئ</button></div>
+      <div class="note info">حالات الطوارئ خارج توزيع المقيمين بالكامل، وتُسجل هنا مباشرة للإحصائيات النهائية.</div>
+    </div>
+    <div class="card"><div class="name">حالات جاهزة للتنفيذ</div><div class="sub">تظهر هنا الحالات الجاهزة سواء كانت موزعة على مقيم أو غير موزعة أو محجوزة للاستشاري.</div></div>
     <div id="operationsList"></div>
   </section>
 
@@ -102,8 +107,8 @@
   <div class="grid" style="margin-top:12px">
     <div class="field"><label>اسم المريض</label><input id="patientName"></div>
     <div class="field"><label>رقم الملف MRN</label><input id="mrn"></div>
-    <div class="field"><label>المسار</label><select id="pathway"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="emergency">Emergency</option><option value="minor">Minor</option></select></div>
-    <div class="field"><label>المقيم المسؤول</label><select id="caseResident"></select></div>
+    <div class="field"><label>المسار</label><select id="pathway" onchange="syncCasePathwayRules()"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="emergency">Emergency</option><option value="minor">Minor</option></select></div>
+    <div class="field"><label>المقيم المسؤول</label><select id="caseResident"></select><div id="emergencyNoDistribution" class="sub" style="display:none">Emergency خارج توزيع المقيمين.</div></div>
     <div class="field"><label>التشخيص</label><input id="diagnosis"></div>
     <div class="field"><label>العملية</label><input id="procedure"></div>
   </div>
@@ -120,7 +125,7 @@
 </div></div>
 
 <div class="modal" id="operationModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">إغلاق العملية</h2><button class="btn secondary" onclick="closeModal('operationModal')">إغلاق</button></div>
+  <div class="row"><h2 style="margin:0">تأكيد إتمام العملية</h2><button class="btn secondary" onclick="closeModal('operationModal')">إغلاق</button></div>
   <div id="operationCaseInfo" class="note info"></div>
   <div class="field"><label>النتيجة</label><select id="operationOutcome" onchange="renderOperationReason()"><option value="owner">أجراها صاحب الحالة</option><option value="official_miss">صاحب الحالة حُرم بعذر رسمي وأجراها غيره</option><option value="consultant">أجراها الاستشاري</option></select></div>
   <div id="officialReasonWrap" style="display:none;margin-top:10px"><div class="field"><label>سبب الحرمان الرسمي</label><select id="officialReason"><option>مناوبة</option><option>Post-call</option><option>عيادة</option><option>تكليف رسمي</option><option>إجازة رسمية</option></select></div></div>
@@ -131,7 +136,22 @@
   <div id="emergencyStatsWrap" class="field" style="display:none;margin-top:10px"><label>Emergency Optimization</label><select id="emergencyOptimization" onchange="renderOperationReason()"><option value="optimized">Optimized — 3 points</option><option value="non_optimized">Non-Optimized — 4 points</option></select></div>
   <div id="operationPointPreview" class="note info">النقاط: 2</div>
   <div class="field" style="margin-top:10px"><label>من أجرى العملية فعليًا (اختياري)</label><input id="actualOperator" placeholder="اسم المقيم الآخر أو Consultant"></div>
-  <div class="footer-actions"><button class="btn dark" onclick="confirmOperation()">تسجيل العملية</button></div>
+  <div class="footer-actions"><button class="btn ok" onclick="confirmOperation()">✅ تمت العملية — أضف للتقرير الشهري</button></div>
+</div></div>
+
+<div class="modal" id="emergencyModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">تسجيل عملية طوارئ</h2><button class="btn secondary" onclick="closeModal('emergencyModal')">إغلاق</button></div>
+  <div class="note info">هذه الحالة لا تدخل في توزيع المقيمين ولا في عدد الحالات لديهم. تُحفظ مباشرة كعملية مكتملة في التقرير الشهري.</div>
+  <div class="grid">
+    <div class="field"><label>اسم المريض (اختياري)</label><input id="emPatient"></div>
+    <div class="field"><label>رقم الملف MRN (اختياري)</label><input id="emMrn"></div>
+    <div class="field"><label>التشخيص</label><input id="emDiagnosis"></div>
+    <div class="field"><label>العملية الفعلية</label><input id="emProcedure"></div>
+    <div class="field"><label>Emergency Optimization</label><select id="emOptimization"><option value="optimized">Optimized — 3 points</option><option value="non_optimized">Non-Optimized — 4 points</option></select></div>
+    <div class="field"><label>استخدام غرفة العمليات بالدقائق</label><input id="emDuration" type="number" min="0" step="5" placeholder="اختياري"></div>
+    <div class="field"><label>من أجرى العملية (اختياري)</label><input id="emOperator" placeholder="Consultant / اسم الطبيب"></div>
+  </div>
+  <div class="footer-actions"><button class="btn danger" onclick="saveEmergencyOperation()">✅ تمت عملية الطوارئ — سجلها</button></div>
 </div></div>
 
 <div class="modal" id="assignModal"><div class="sheet">
