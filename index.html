@@ -3,595 +3,131 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#123b4a">
+<meta name="theme-color" content="#0b5266">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>توزيع حالات العمليات</title>
-<style>
-:root{
-  --bg:#eef3f5;--card:#fff;--ink:#17323a;--muted:#718087;--primary:#123b4a;--primary2:#1d6071;
-  --line:#d8e2e6;--soft:#f3f7f8;--ok:#16825b;--warn:#c98416;--bad:#b63f3f;--blue:#236b93;
-  --shadow:0 10px 28px rgba(18,59,74,.08)
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;color:var(--ink)}
-button,input,select,textarea{font:inherit}
-.app{max-width:1050px;margin:auto;padding-bottom:92px}
-header{position:sticky;top:0;z-index:30;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:16px;box-shadow:0 5px 18px rgba(0,0,0,.16)}
-header h1{margin:0;font-size:22px}
-header p{margin:5px 0 0;opacity:.9;font-size:12px}
-.topbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.btn{border:0;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}
-.btn.primary{background:#fff;color:var(--primary)}
-.btn.ghost{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.28)}
-.btn.dark{background:var(--primary);color:#fff}
-.btn.secondary{background:#e9f1f3;color:var(--primary)}
-.btn.ok{background:#e4f4ed;color:var(--ok)}
-.btn.warn{background:#fff1db;color:#915b00}
-.btn.danger{background:#fde9e9;color:#a53030}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.wrap{padding:14px}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.tab{border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 8px;font-weight:900;color:var(--primary)}
-.tab.active{background:var(--primary);color:#fff}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
-.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center;box-shadow:var(--shadow)}
-.stat b{display:block;font-size:22px}
-.stat span{font-size:11px;color:var(--muted)}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
-.row{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.name{font-size:17px;font-weight:900}
-.sub{color:var(--muted);font-size:12px;margin-top:3px}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}
-.badge.unassigned{background:#edf0f2;color:#56666c}.badge.assigned{background:#e8f2f8;color:var(--blue)}
-.badge.ready{background:#e6f5ee;color:var(--ok)}.badge.consultant{background:#fdeaea;color:var(--bad)}
-.badge.done{background:#e8ecee;color:#53636a}
-.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.meta div{background:var(--soft);border-radius:12px;padding:9px;font-size:12px}
-.meta b{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
-.missing{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.miss{padding:6px 8px;background:#fff6e8;border:1px solid #f2ddb9;border-radius:9px;font-size:11px}
-.miss.done{text-decoration:line-through;background:#eaf6f0;border-color:#cce8da;color:#53806d}
-.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.actions .btn{font-size:12px}
-.filters{display:flex;gap:7px;overflow:auto;margin:0 0 12px;padding-bottom:2px}
-.chip{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-weight:700}
-.chip.active{background:var(--primary);color:#fff}
-.note{background:#fff7e8;border:1px solid #f0d59c;border-radius:13px;padding:11px;font-size:12px;margin-bottom:12px}
-.note.info{background:#eaf4f8;border-color:#c9e0e8}
-.section-title{font-size:14px;font-weight:900;color:var(--primary);margin:14px 0 8px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.field label{display:block;font-size:12px;color:var(--muted);font-weight:800;margin-bottom:5px}
-input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;color:var(--ink)}
-textarea{min-height:90px;resize:vertical}
-.tableHead,.resRow{display:grid;grid-template-columns:45px 1.5fr .7fr .7fr .7fr 1fr;gap:7px;align-items:center;padding:10px 5px;border-bottom:1px solid var(--line)}
-.tableHead{font-size:11px;color:var(--muted);font-weight:900}
-.resRow{font-size:12px}
-.orderBtns{display:flex;gap:3px}
-.orderBtns button{border:0;background:var(--soft);border-radius:8px;padding:5px 7px}
-.load{font-weight:900;font-size:16px}
-.surplus{border:1px dashed #e0b35f;background:#fffaf0}
-.log{border-right:3px solid var(--line);padding:7px 11px;margin:7px 0;font-size:12px}
-.log b{display:block}
-.log small{color:var(--muted)}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:60;padding:12px;overflow:auto}
-.modal.show{display:block}
-.sheet{max-width:860px;margin:18px auto;background:#fff;border-radius:22px;padding:16px}
-.footer-actions{display:flex;gap:8px;position:sticky;bottom:0;background:#fff;padding-top:12px}
-.footer-actions .btn{flex:1}
-.importPreview{display:flex;flex-direction:column;gap:10px;max-height:55vh;overflow:auto}
-.draft{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfdfd}
-.draft .grid{grid-template-columns:1fr 1fr}
-.draft textarea{min-height:66px}
-.switch{display:flex;align-items:center;gap:9px;font-size:13px}
-.switch input{width:auto;transform:scale(1.2)}
-.empty{text-align:center;color:var(--muted);padding:28px 10px}
-.toast{display:none;position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:100;background:#18343c;color:#fff;padding:10px 14px;border-radius:12px;max-width:90%;text-align:center}
-.toast.show{display:block}
-@media(max-width:720px){
-  .tabs{grid-template-columns:repeat(2,1fr)}
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .stats .stat:last-child{grid-column:span 2}
-  .grid,.draft .grid{grid-template-columns:1fr}
-  .meta{grid-template-columns:1fr 1fr}
-  .tableHead{display:none}
-  .resRow{grid-template-columns:38px 1fr 54px 54px;gap:5px}
-  .resRow .hideMobile{display:none}
-}
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<title>مسار العمليات والمقيمين</title>
+<link rel="stylesheet" href="./style.css">
 </head>
 <body>
 <div class="app">
-<header>
-  <h1>توزيع حالات العمليات على المقيمين</h1>
-  <p>ملكية حالة واحدة • لا مشاركة في الحالة • توزيع متساوٍ • الزيادة بقرار الاستشاري</p>
-  <div class="topbar">
-    <label class="btn primary">استيراد PDF<input id="pdfFile" type="file" accept="application/pdf,.pdf" hidden onchange="readPdf(event)"></label>
-    <button class="btn ghost" onclick="openCase()">+ إضافة حالة</button>
-    <button class="btn ghost" onclick="shareCurrentList()">مشاركة القائمة</button>
-    <button class="btn ghost" onclick="exportBackup()">نسخة احتياطية</button>
-  </div>
-</header>
-
+<header><div class="head"><div class="brand"><h1>مسار العمليات والمقيمين</h1><p>ملف واحد للمريض • تجهيز • توزيع • عملية • تقرير القروب</p></div><div class="topbar"><button class="btn primary" onclick="openCase()">+ حالة</button><button class="btn ghost" onclick="openSettings()">الإعدادات</button><button class="btn ghost" onclick="exportBackup()">نسخة احتياطية</button></div></div></header>
 <div class="wrap">
   <div class="tabs">
-    <button id="tabCases" class="tab active" onclick="showTab('cases')">الحالات</button>
-    <button id="tabDistribution" class="tab" onclick="showTab('distribution')">التوزيع</button>
+    <button id="tabDashboard" class="tab active" onclick="showTab('dashboard')">الرئيسية</button>
+    <button id="tabCases" class="tab" onclick="showTab('cases')">الحالات</button>
     <button id="tabResidents" class="tab" onclick="showTab('residents')">المقيمون</button>
-    <button id="tabHistory" class="tab" onclick="showTab('history')">السجل</button>
+    <button id="tabOperations" class="tab" onclick="showTab('operations')">العمليات</button>
+    <button id="tabReports" class="tab" onclick="showTab('reports')">التقارير</button>
   </div>
 
-  <section id="casesSection">
+  <section id="dashboardSection">
     <div class="stats">
-      <div class="stat"><b id="stAll">0</b><span>كل الحالات</span></div>
-      <div class="stat"><b id="stUnassigned">0</b><span>غير موزعة</span></div>
-      <div class="stat"><b id="stAssigned">0</b><span>تحت التحضير</span></div>
-      <div class="stat"><b id="stReady">0</b><span>جاهزة للمقيم</span></div>
-      <div class="stat"><b id="stConsultant">0</b><span>استشاري فقط</span></div>
+      <div class="stat"><b id="dActive">0</b><span>الحالات الحالية</span></div>
+      <div class="stat"><b id="dReady">0</b><span>جاهز</span></div>
+      <div class="stat"><b id="dSign">0</b><span>انتظار توقيع</span></div>
+      <div class="stat"><b id="dNotReady">0</b><span>غير جاهز</span></div>
+      <div class="stat"><b id="dUnassigned">0</b><span>غير موزع</span></div>
+      <div class="stat"><b id="dComp">0</b><span>تعويضات مستحقة</span></div>
     </div>
+    <div class="split">
+      <div class="card"><div class="name">DSU / Day Surgery</div><div id="dashDay" class="miniList" style="margin-top:10px"></div></div>
+      <div class="card"><div class="name">Elective</div><div id="dashElective" class="miniList" style="margin-top:10px"></div></div>
+    </div>
+    <div class="card"><div class="row"><div><div class="name">ما يحتاج تدخلك الآن</div><div class="sub">الحالات غير الموزعة والتعويضات والحالات الجاهزة للعملية.</div></div><button class="btn dark" onclick="showTab('residents')">فتح التوزيع</button></div><div id="attentionList" class="miniList" style="margin-top:10px"></div></div>
+  </section>
+
+  <section id="casesSection" style="display:none">
     <div class="filters">
-      <button class="chip active" data-filter="active" onclick="setFilter(this)">الحالية</button>
-      <button class="chip" data-filter="unassigned" onclick="setFilter(this)">غير موزعة</button>
-      <button class="chip" data-filter="assigned" onclick="setFilter(this)">تحت التحضير</button>
-      <button class="chip" data-filter="ready" onclick="setFilter(this)">جاهزة</button>
-      <button class="chip" data-filter="consultant" onclick="setFilter(this)">استشاري فقط</button>
-      <button class="chip" data-filter="done" onclick="setFilter(this)">مكتملة</button>
-      <button class="chip" data-filter="all" onclick="setFilter(this)">الكل</button>
+      <button class="chip active" data-f="active" onclick="setCaseFilter(this)">الحالية</button>
+      <button class="chip" data-f="day" onclick="setCaseFilter(this)">DSU</button>
+      <button class="chip" data-f="elective" onclick="setCaseFilter(this)">Elective</button>
+      <button class="chip" data-f="notready" onclick="setCaseFilter(this)">غير جاهز</button>
+      <button class="chip" data-f="signature" onclick="setCaseFilter(this)">انتظار توقيع</button>
+      <button class="chip" data-f="ready" onclick="setCaseFilter(this)">جاهز</button>
+      <button class="chip" data-f="consultant" onclick="setCaseFilter(this)">استشاري فقط</button>
+      <button class="chip" data-f="archive" onclick="setCaseFilter(this)">الأرشيف</button>
     </div>
     <div id="casesList"></div>
   </section>
 
-  <section id="distributionSection" style="display:none">
-    <div class="card">
-      <div class="name">إعادة التوزيع</div>
-      <div class="sub">التوزيع لا يسحب أي حالة من صاحبها الحالي. يتم فقط توزيع الحالات غير الموزعة لرفع الأقل حتى تتساوى الأعداد.</div>
-      <div class="note info" style="margin-top:10px">
-        إذا تساوت أعداد الحالات عند جميع المقيمين وبقيت حالات إضافية لا يوزعها البرنامج تلقائيًا؛ تظهر كـ <b>زيادة تحتاج قرارك</b> وتحدد أنت من يأخذها.
-      </div>
-      <div class="switch">
-        <input id="autoReplacement" type="checkbox" onchange="saveSetting()">
-        <label for="autoReplacement"><b>إعطاء المقيم أول حالة غير موزعة كبديل تلقائيًا بعد إتمام عمليته</b></label>
-      </div>
-      <div class="actions">
-        <button class="btn dark" onclick="distributeFair()">توزيع الحالات غير الموزعة الآن</button>
-        <button class="btn secondary" onclick="shareCurrentList()">إنشاء/مشاركة قائمة الأسبوع</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="name">الحمل الحالي حسب الترتيب</div>
-      <div class="sub">المقصود بالحمل الحالي: الحالات المملوكة للمقيم سواء تحت التحضير أو جاهزة للعملية.</div>
-      <div id="loadBoard"></div>
-    </div>
-    <div class="card surplus">
-      <div class="name">زيادة تحتاج قرارك</div>
-      <div class="sub">هذه الحالات بقيت بعد أن أصبح التوزيع متساويًا أو لأن العدد لا يكفي لطبقة كاملة من التوزيع.</div>
-      <div id="surplusList"></div>
-    </div>
-  </section>
-
   <section id="residentsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">المقيمون وترتيب الدور</div><div class="sub">يمكن تغيير الترتيب. البرنامج يستخدم هذا الترتيب عند تساوي الأحمال.</div></div>
-      <button class="btn dark" onclick="addResidentPrompt()">+ مقيم</button></div>
-      <div class="tableHead"><span>#</span><span>الاسم</span><span>الحالي</span><span>عمليات</span><span>تعثر</span><span>الحالة</span></div>
+      <div class="row"><div><div class="name">التوزيع العادل</div><div class="sub">التعويض الرسمي أولًا، ثم الأقل في عدد الحالات الحالية، ثم ترتيب الدور.</div></div><button class="btn dark" onclick="distributeCases()">توزيع الآن</button></div>
+      <div class="note info">الحالة الموجودة مع مقيم لا تُسحب منه عند إعادة التوزيع. وإذا تساوت الأحمال وبقي عدد لا يكفي للجميع، تبقى الزيادة غير موزعة لتحددها أنت.</div>
+      <div id="distributionStatus"></div>
+    </div>
+    <div class="card">
+      <div class="row"><div><div class="name">المقيمون</div><div class="sub">الحالي = الحالات المملوكة الآن. التعويض = حالات إضافية بسبب مناوبة/عيادة/تكليف رسمي.</div></div><button class="btn secondary" onclick="addResidentPrompt()">+ مقيم</button></div>
+      <div class="tableHead"><span>#</span><span>المقيم</span><span>الحالي</span><span>جاهز</span><span>عمليات</span><span>تعويض</span><span>الحالة</span></div>
       <div id="residentTable"></div>
     </div>
+    <div class="card"><div class="name">حالات تحتاج قرارك</div><div class="sub">الزيادة التي لم يوزعها النظام تلقائيًا.</div><div id="surplusList" style="margin-top:10px"></div></div>
   </section>
 
-  <section id="historySection" style="display:none">
-    <div class="card">
-      <div class="row"><div><div class="name">سجل الحركة</div><div class="sub">توزيع، جاهزية، تعثر، عملية، وبديل.</div></div>
-      <button class="btn secondary" onclick="clearHistory()">مسح السجل</button></div>
-      <div id="historyList"></div>
-    </div>
+  <section id="operationsSection" style="display:none">
+    <div class="card"><div class="name">جاهز للعملية</div><div class="sub">الحالات الجاهزة والمملوكة لمقيم، ثم حالات الاستشاري فقط.</div></div>
+    <div id="operationsList"></div>
   </section>
-</div>
-</div>
+
+  <section id="reportsSection" style="display:none">
+    <div class="split">
+      <div class="card"><div class="row"><div><div class="name">رسالة قروب المقيمين</div><div class="sub">ملخص العدد + جميع المقيمين وحالاتهم ونواقصهم في رسالة واحدة.</div></div></div><textarea id="groupReport" class="reportbox" readonly></textarea><div class="actions"><button class="btn dark" onclick="shareGroupReport()">إرسال/مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('groupReport')">نسخ</button></div></div>
+      <div class="card"><div class="row"><div><div class="name">تقرير الجاهزية</div><div class="sub">DSU وElective بنفس منطق تقرير التنسيق القديم.</div></div></div><textarea id="readinessReport" class="reportbox" readonly></textarea><div class="actions"><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ التقرير</button></div></div>
+    </div>
+    <div class="card"><div class="name">سجل الحركة</div><div id="historyList" style="margin-top:10px"></div></div>
+  </section>
+</div></div>
 
 <div class="modal" id="caseModal"><div class="sheet">
-  <div class="row"><h2 id="caseTitle" style="margin:0">إضافة حالة</h2><button class="btn secondary" onclick="closeModal('caseModal')">إغلاق</button></div>
+  <div class="row"><h2 id="caseModalTitle" style="margin:0">حالة</h2><button class="btn secondary" onclick="closeModal('caseModal')">إغلاق</button></div>
   <input id="caseId" type="hidden">
   <div class="grid" style="margin-top:12px">
-    <div class="field"><label>MRN / رقم الملف</label><input id="mrn"></div>
-    <div class="field"><label>اسم/رمز المريض (اختياري)</label><input id="patient"></div>
+    <div class="field"><label>اسم المريض</label><input id="patientName"></div>
+    <div class="field"><label>رقم الملف MRN</label><input id="mrn"></div>
+    <div class="field"><label>المسار</label><select id="pathway"><option value="day">DSU / Day Surgery</option><option value="elective">Elective</option></select></div>
+    <div class="field"><label>المقيم المسؤول</label><select id="caseResident"></select></div>
     <div class="field"><label>التشخيص</label><input id="diagnosis"></div>
-    <div class="field"><label>العملية المقترحة</label><input id="operation"></div>
-    <div class="field"><label>تاريخ العملية المتوقع (اختياري)</label><input id="surgeryDate" type="date"></div>
-    <div class="field"><label>المصدر / الدفعة</label><input id="sourceBatch"></div>
+    <div class="field"><label>العملية</label><input id="procedure"></div>
   </div>
-  <div class="field" style="margin-top:10px"><label>النواقص — كل نقص في سطر مستقل</label><textarea id="missingText"></textarea></div>
-  <div class="field" style="margin-top:10px"><label>ملاحظات</label><textarea id="notes"></textarea></div>
-  <div class="footer-actions">
-    <button class="btn dark" onclick="saveCase()">حفظ</button>
-    <button id="deleteCaseBtn" class="btn danger" style="display:none" onclick="deleteCase()">حذف</button>
-  </div>
+  <div class="section-title">التجهيز</div><div id="checklistEditor" class="checkgrid"></div>
+  <div class="field" style="margin-top:10px"><label>ملاحظات</label><textarea id="caseNotes"></textarea></div>
+  <div class="footer-actions"><button class="btn dark" onclick="saveCase()">حفظ</button><button id="archiveBtn" class="btn warn" onclick="toggleArchiveCase()">أرشفة</button></div>
+</div></div>
+
+<div class="modal" id="replyModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">تحديث رد المقيم</h2><button class="btn secondary" onclick="closeModal('replyModal')">إغلاق</button></div>
+  <div id="replyCaseInfo" class="note info"></div>
+  <div class="actions"><button class="btn ok" onclick="completePreparation()">اكتمل التجهيز كله</button><button class="btn secondary" onclick="showPartialEditor()">اكتمل جزء</button><button class="btn danger" onclick="failPreparation()">لم يُكمل الحالة</button></div>
+  <div id="partialEditor" style="display:none"><div class="section-title">حدد ما تم إنجازه</div><div id="replyChecklist" class="checkgrid"></div><div class="footer-actions"><button class="btn dark" onclick="savePartialReply()">حفظ التحديث</button></div></div>
+</div></div>
+
+<div class="modal" id="operationModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">إغلاق العملية</h2><button class="btn secondary" onclick="closeModal('operationModal')">إغلاق</button></div>
+  <div id="operationCaseInfo" class="note info"></div>
+  <div class="field"><label>النتيجة</label><select id="operationOutcome" onchange="renderOperationReason()"><option value="owner">أجراها صاحب الحالة</option><option value="official_miss">صاحب الحالة حُرم بعذر رسمي وأجراها غيره</option><option value="consultant">أجراها الاستشاري</option></select></div>
+  <div id="officialReasonWrap" style="display:none;margin-top:10px"><div class="field"><label>سبب الحرمان الرسمي</label><select id="officialReason"><option>مناوبة</option><option>Post-call</option><option>عيادة</option><option>تكليف رسمي</option><option>إجازة رسمية</option></select></div></div>
+  <div class="field" style="margin-top:10px"><label>من أجرى العملية فعليًا (اختياري)</label><input id="actualOperator" placeholder="اسم المقيم الآخر أو Consultant"></div>
+  <div class="footer-actions"><button class="btn dark" onclick="confirmOperation()">تسجيل العملية</button></div>
 </div></div>
 
 <div class="modal" id="assignModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">تعيين الحالة</h2><button class="btn secondary" onclick="closeModal('assignModal')">إغلاق</button></div>
-  <div id="assignCaseLabel" class="note info" style="margin-top:12px"></div>
-  <div class="field"><label>المقيم</label><select id="assignResident"></select></div>
-  <div class="footer-actions"><button class="btn dark" onclick="confirmAssign()">تعيين</button></div>
+  <div class="row"><h2 style="margin:0">تعيين يدوي</h2><button class="btn secondary" onclick="closeModal('assignModal')">إغلاق</button></div>
+  <div id="assignInfo" class="note info"></div><div class="field"><label>المقيم</label><select id="assignResident"></select></div>
+  <div class="footer-actions"><button class="btn dark" onclick="confirmManualAssign()">تعيين</button></div>
 </div></div>
 
-<div class="modal" id="importModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">مراجعة استيراد PDF</h2><button class="btn secondary" onclick="closeModal('importModal')">إغلاق</button></div>
-  <div class="note info" style="margin-top:12px">قراءة الـPDF تتم داخل المتصفح ولا يتم رفع الملف إلى خادم. راجع الحقول قبل الحفظ لأن ترتيب النص في بعض ملفات PDF قد لا يكون مثاليًا.</div>
-  <div class="field"><label>النص المستخرج / أو الصق هنا نص برنامج التنسيق</label><textarea id="rawImportText" style="min-height:130px"></textarea></div>
-  <div class="actions"><button class="btn secondary" onclick="parseRawText()">إعادة تحليل النص</button></div>
-  <div class="section-title">الحالات المقروءة</div>
-  <div id="importPreview" class="importPreview"></div>
-  <div class="footer-actions"><button class="btn dark" onclick="commitImport()">إضافة الحالات المحددة</button></div>
-</div></div>
-
-<div class="modal" id="backupModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">استعادة نسخة احتياطية</h2><button class="btn secondary" onclick="closeModal('backupModal')">إغلاق</button></div>
-  <label class="btn secondary" style="display:inline-block;margin-top:12px">اختر ملف JSON<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label>
+<div class="modal" id="settingsModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">الإعدادات</h2><button class="btn secondary" onclick="closeModal('settingsModal')">إغلاق</button></div>
+  <div class="field" style="margin-top:12px"><label>اسم القروب / عنوان الرسالة</label><input id="groupTitle"></div>
+  <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="includeNames" type="checkbox" style="width:auto"> إظهار اسم المريض في رسالة القروب (مع MRN)</label></div>
+  <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="autoReplacement" type="checkbox" style="width:auto"> إعطاء حالة بديلة تلقائيًا بعد تسجيل العملية إذا كانت هناك حالة غير موزعة</label></div>
+  <div class="actions"><label class="btn secondary" style="display:inline-block">استعادة نسخة احتياطية<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label></div>
+  <div class="footer-actions"><button class="btn dark" onclick="saveSettings()">حفظ الإعدادات</button></div>
 </div></div>
 
 <div id="toast" class="toast"></div>
-
-<script>
-const KEY="gs_case_owner_v1";
-const LEGACY_KEY="rct_v4_state";
-let state=loadState();
-let currentFilter="active";
-let assigningCaseId="";
-let importDrafts=[];
-
-function freshState(){return {version:1,cases:[],residents:[],events:[],batches:[],settings:{autoReplacement:true}}}
-function loadState(){
-  try{
-    const x=JSON.parse(localStorage.getItem(KEY)||"null");
-    if(x && x.version===1) return x;
-  }catch(e){}
-  const s=freshState();
-  try{
-    const old=JSON.parse(localStorage.getItem(LEGACY_KEY)||"null");
-    if(old){
-      Object.keys(old.residents||{}).forEach((name,i)=>s.residents.push({id:"R"+Date.now()+i,name,active:true,createdAt:new Date().toISOString()}));
-      (old.cases||[]).forEach((c,i)=>{
-        const miss=[];
-        Object.entries(c.reqs||{}).forEach(([k,v])=>{if(v==="pending")miss.push({text:k,done:false});});
-        (c.labs||[]).forEach(x=>{if(x.status!=="done")miss.push({text:x.name,done:false});});
-        (c.imaging||[]).forEach(x=>{if(x.status!=="done")miss.push({text:x.name,done:false});});
-        s.cases.push({
-          id:c.id||makeCaseId(i),mrn:c.patient||"",patient:"",diagnosis:c.dx||"",operation:c.op||"",
-          surgeryDate:c.targetDate||"",sourceBatch:"Legacy V5",missing:miss,notes:c.notes||"",
-          status:"unassigned",owner:"",previousOwner:"",performedBy:"",createdAt:new Date().toISOString()
-        });
-      });
-      if(s.cases.length||s.residents.length){
-        s.events.push(evt("migration","", "", "تم تحويل بيانات النسخة القديمة إلى نظام ملكية الحالة"));
-      }
-    }
-  }catch(e){}
-  return s;
-}
-function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
-function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
-function toastMsg(t){toast.textContent=t;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2500)}
-function makeCaseId(seed=""){return "GS-"+new Date().toISOString().slice(2,10).replaceAll("-","")+"-"+String(Date.now()+Number(seed||0)).slice(-5)}
-function evt(type,caseId="",resident="",detail=""){return {id:"E"+Date.now()+Math.random(),type,caseId,resident,detail,at:new Date().toISOString()}}
-function logEvent(type,c,resident,detail){state.events.push(evt(type,c?.id||"",resident||"",detail||""))}
-function statusLabel(s){return ({unassigned:"غير موزعة",assigned:"تحت التحضير",ready:"جاهزة للمقيم",consultant:"استشاري فقط",done:"مكتملة"})[s]||s}
-function activeResidents(){return state.residents.filter(r=>r.active)}
-function activeLoad(name){return state.cases.filter(c=>c.owner===name && (c.status==="assigned"||c.status==="ready")).length}
-function residentDone(name){return state.cases.filter(c=>c.status==="done"&&c.performedBy===name).length}
-function residentFails(name){return state.events.filter(e=>e.type==="failed"&&e.resident===name).length}
-function unassignedCases(){return state.cases.filter(c=>c.status==="unassigned")}
-function caseDisplay(c){return c.mrn||c.patient||c.id}
-function saveSetting(){state.settings.autoReplacement=autoReplacement.checked;persist()}
-
-function showTab(t){
-  ["cases","distribution","residents","history"].forEach(x=>{
-    document.getElementById(x+"Section").style.display=x===t?"block":"none";
-    document.getElementById("tab"+x[0].toUpperCase()+x.slice(1)).classList.toggle("active",x===t);
-  });
-  renderAll();
-}
-function setFilter(btn){document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));btn.classList.add("active");currentFilter=btn.dataset.filter;renderCases()}
-function renderAll(){
-  persist();
-  autoReplacement.checked=state.settings.autoReplacement!==false;
-  renderCases();renderDistribution();renderResidents();renderHistory();
-}
-function renderCases(){
-  const all=state.cases;
-  stAll.textContent=all.length;
-  stUnassigned.textContent=all.filter(c=>c.status==="unassigned").length;
-  stAssigned.textContent=all.filter(c=>c.status==="assigned").length;
-  stReady.textContent=all.filter(c=>c.status==="ready").length;
-  stConsultant.textContent=all.filter(c=>c.status==="consultant").length;
-  let list=all.filter(c=>{
-    if(currentFilter==="all")return true;
-    if(currentFilter==="active")return c.status!=="done";
-    return c.status===currentFilter;
-  });
-  casesList.innerHTML=list.length?list.map(caseCard).join(""):'<div class="empty">لا توجد حالات في هذا العرض.</div>';
-}
-function caseCard(c){
-  const misses=(c.missing||[]);
-  const owner=c.owner||c.previousOwner||"—";
-  let action="";
-  if(c.status==="unassigned"){
-    action='<button class="btn dark" onclick="openAssign(\''+c.id+'\')">تعيين لمقيم</button>';
-  }else if(c.status==="assigned"){
-    action='<button class="btn ok" onclick="markReady(\''+c.id+'\')">اكتمل التجهيز</button><button class="btn danger" onclick="markFailed(\''+c.id+'\')">لم يُكملها</button>';
-  }else if(c.status==="ready"){
-    action='<button class="btn dark" onclick="finishResidentCase(\''+c.id+'\')">تمت العملية</button><button class="btn danger" onclick="markFailed(\''+c.id+'\')">سحبها للاستشاري</button>';
-  }else if(c.status==="consultant"){
-    action='<button class="btn dark" onclick="finishConsultantCase(\''+c.id+'\')">تمت العملية بواسطة الاستشاري</button>';
-  }
-  return '<div class="card">'+
-    '<div class="row"><div><div class="name">'+esc(caseDisplay(c))+(c.operation?' — '+esc(c.operation):'')+'</div><div class="sub">'+esc(c.diagnosis||"بدون تشخيص مدخل")+' · '+esc(c.id)+'</div></div><span class="badge '+c.status+'">'+statusLabel(c.status)+'</span></div>'+
-    '<div class="meta"><div><b>صاحب الحالة</b>'+esc(owner)+'</div><div><b>موعد متوقع</b>'+esc(c.surgeryDate||"—")+'</div><div><b>المصدر</b>'+esc(c.sourceBatch||"—")+'</div></div>'+
-    '<div class="missing">'+(misses.length?misses.map((m,i)=>'<button class="miss '+(m.done?'done':'')+'" onclick="toggleMissing(\''+c.id+'\','+i+')" '+((c.status==="done"||c.status==="consultant")?'disabled':'')+'>'+esc(m.text)+'</button>').join(""):'<span class="sub">لا توجد نواقص مسجلة</span>')+'</div>'+
-    '<div class="actions">'+action+'<button class="btn secondary" onclick="openCase(\''+c.id+'\')">تعديل</button></div>'+
-  '</div>';
-}
-function toggleMissing(id,i){const c=state.cases.find(x=>x.id===id);if(!c||!c.missing?.[i])return;c.missing[i].done=!c.missing[i].done;logEvent("missing",c,c.owner,c.missing[i].text+" = "+(c.missing[i].done?"تم":"غير مكتمل"));renderAll()}
-
-function renderDistribution(){
-  const rs=activeResidents();
-  loadBoard.innerHTML=rs.length?rs.map((r,i)=>'<div class="resRow"><span>'+(i+1)+'</span><b>'+esc(r.name)+'</b><span class="load">'+activeLoad(r.name)+'</span><span>'+residentDone(r.name)+'</span><span>'+residentFails(r.name)+'</span><span class="hideMobile">'+(r.active?"نشط":"موقوف")+'</span></div>').join(""):'<div class="empty">أضف المقيمين أولًا.</div>';
-  const extra=unassignedCases();
-  surplusList.innerHTML=extra.length?extra.map(c=>'<div class="card" style="box-shadow:none;margin-top:10px"><div class="row"><div><b>'+esc(caseDisplay(c))+'</b><div class="sub">'+esc(c.diagnosis||"")+'</div></div><button class="btn warn" onclick="openAssign(\''+c.id+'\')">تعيين الزيادة</button></div></div>').join(""):'<div class="empty">لا توجد زيادة غير موزعة.</div>';
-}
-function distributeFair(){
-  const rs=activeResidents();
-  if(!rs.length){alert("أضف مقيمًا نشطًا واحدًا على الأقل.");return}
-  let queue=unassignedCases().slice().sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
-  if(!queue.length){toastMsg("لا توجد حالات غير موزعة");return}
-  const loads=Object.fromEntries(rs.map(r=>[r.name,activeLoad(r.name)]));
-  let assigned=0;
-  while(queue.length){
-    const vals=rs.map(r=>loads[r.name]);
-    const min=Math.min(...vals),max=Math.max(...vals);
-    if(min<max){
-      const need=rs.filter(r=>loads[r.name]===min);
-      if(queue.length<need.length)break;
-      need.forEach(r=>{
-        const c=queue.shift();assignCase(c,r.name,"fair");loads[r.name]++;assigned++;
-      });
-    }else{
-      if(queue.length<rs.length)break;
-      rs.forEach(r=>{
-        const c=queue.shift();assignCase(c,r.name,"fair");loads[r.name]++;assigned++;
-      });
-    }
-  }
-  renderAll();
-  toastMsg(assigned?"تم توزيع "+assigned+" حالة بالتساوي":"بقيت الحالات كزيادة تحتاج قرارك");
-}
-function assignCase(c,name,source="manual"){
-  if(!c||c.status!=="unassigned")return false;
-  c.owner=name;c.previousOwner="";c.status="assigned";c.assignedAt=new Date().toISOString();
-  logEvent("assigned",c,name,source==="replacement"?"حالة بديلة":source==="fair"?"توزيع متساوٍ":"تعيين يدوي");
-  return true;
-}
-function openAssign(id){
-  const c=state.cases.find(x=>x.id===id);if(!c||c.status!=="unassigned")return;
-  assigningCaseId=id;assignCaseLabel.textContent=(c.mrn||c.id)+" — "+(c.diagnosis||"");
-  const rs=activeResidents();
-  assignResident.innerHTML=rs.map(r=>'<option value="'+esc(r.name)+'">'+esc(r.name)+' — الحالي '+activeLoad(r.name)+'</option>').join("");
-  if(!rs.length){assignResident.innerHTML='<option>لا يوجد مقيم نشط</option>'}
-  assignModal.classList.add("show");
-}
-function confirmAssign(){
-  const c=state.cases.find(x=>x.id===assigningCaseId),name=assignResident.value;
-  if(!c||!activeResidents().some(r=>r.name===name)){alert("اختر مقيمًا نشطًا");return}
-  assignCase(c,name,"manual");closeModal("assignModal");renderAll();
-}
-function markReady(id){
-  const c=state.cases.find(x=>x.id===id);if(!c||c.status!=="assigned")return;
-  const pending=(c.missing||[]).filter(x=>!x.done);
-  if(pending.length && !confirm("ما زالت هناك "+pending.length+" نواقص غير مؤشرة كمكتملة. هل تعتبر الحالة مكتملة التجهيز؟"))return;
-  (c.missing||[]).forEach(x=>x.done=true);
-  c.status="ready";c.preparedAt=new Date().toISOString();
-  logEvent("ready",c,c.owner,"اكتمل تجهيز الحالة وثبتت للمقيم للعملية");
-  renderAll();
-}
-function markFailed(id){
-  const c=state.cases.find(x=>x.id===id);if(!c||!["assigned","ready"].includes(c.status))return;
-  if(!confirm("ستتحول الحالة إلى «استشاري فقط» ولن تعطى لأي مقيم آخر. متابعة؟"))return;
-  const name=c.owner;c.previousOwner=name;c.owner="";c.status="consultant";c.failedAt=new Date().toISOString();
-  logEvent("failed",c,name,"لم يكتمل تجهيز الحالة؛ حُجزت للاستشاري فقط");
-  renderAll();
-}
-function finishResidentCase(id){
-  const c=state.cases.find(x=>x.id===id);if(!c||c.status!=="ready")return;
-  const name=c.owner;c.status="done";c.performedBy=name;c.completedAt=new Date().toISOString();
-  logEvent("operation",c,name,"تمت العملية بواسطة المقيم صاحب الحالة");
-  let rep=null;
-  if(state.settings.autoReplacement!==false){
-    rep=unassignedCases().filter(x=>x.id!==c.id).sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt))[0];
-    if(rep)assignCase(rep,name,"replacement");
-  }
-  renderAll();
-  toastMsg(rep?"تمت العملية وأُعطي "+name+" حالة بديلة":"تم تسجيل العملية");
-}
-function finishConsultantCase(id){
-  const c=state.cases.find(x=>x.id===id);if(!c||c.status!=="consultant")return;
-  c.status="done";c.performedBy="Consultant";c.completedAt=new Date().toISOString();
-  logEvent("consultant_operation",c,c.previousOwner||"","تمت العملية بواسطة الاستشاري؛ لم تُمنح لمقيم آخر");
-  renderAll();
-}
-
-function renderResidents(){
-  residentTable.innerHTML=state.residents.length?state.residents.map((r,i)=>
-    '<div class="resRow"><span>'+(i+1)+'</span><div><b>'+esc(r.name)+'</b><div class="orderBtns"><button onclick="moveResident('+i+',-1)">↑</button><button onclick="moveResident('+i+',1)">↓</button></div></div><span class="load">'+activeLoad(r.name)+'</span><span>'+residentDone(r.name)+'</span><span>'+residentFails(r.name)+'</span><span><button class="btn '+(r.active?'ok':'secondary')+'" onclick="toggleResident('+i+')">'+(r.active?'نشط':'موقوف')+'</button></span></div>'
-  ).join(""):'<div class="empty">لم تتم إضافة مقيمين بعد.</div>';
-}
-function addResidentPrompt(){
-  const name=(prompt("اسم المقيم")||"").trim();if(!name)return;
-  if(state.residents.some(r=>r.name.toLowerCase()===name.toLowerCase())){alert("الاسم موجود مسبقًا");return}
-  state.residents.push({id:"R"+Date.now(),name,active:true,createdAt:new Date().toISOString()});
-  logEvent("resident","",name,"إضافة مقيم");renderAll();
-}
-function moveResident(i,d){const j=i+d;if(j<0||j>=state.residents.length)return;[state.residents[i],state.residents[j]]=[state.residents[j],state.residents[i]];renderAll()}
-function toggleResident(i){
-  const r=state.residents[i];if(!r)return;
-  if(r.active && activeLoad(r.name)>0 && !confirm("لدى هذا المقيم حالات حالية. إيقافه لن يسحبها منه. متابعة؟"))return;
-  r.active=!r.active;renderAll();
-}
-
-function openCase(id=""){
-  const c=id?state.cases.find(x=>x.id===id):null;
-  caseTitle.textContent=c?"تعديل الحالة":"إضافة حالة";
-  caseId.value=c?.id||"";mrn.value=c?.mrn||"";patient.value=c?.patient||"";diagnosis.value=c?.diagnosis||"";operation.value=c?.operation||"";
-  surgeryDate.value=c?.surgeryDate||"";sourceBatch.value=c?.sourceBatch||"";notes.value=c?.notes||"";
-  missingText.value=(c?.missing||[]).map(x=>x.text).join("\\n");
-  deleteCaseBtn.style.display=c?"block":"none";
-  caseModal.classList.add("show");
-}
-function saveCase(){
-  if(!mrn.value.trim()&&!patient.value.trim()){alert("أدخل رقم الملف أو رمز المريض.");return}
-  const old=state.cases.find(x=>x.id===caseId.value);
-  const lines=missingText.value.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean);
-  const oldMap=Object.fromEntries((old?.missing||[]).map(x=>[x.text,x.done]));
-  const c={
-    id:old?.id||makeCaseId(),mrn:mrn.value.trim(),patient:patient.value.trim(),diagnosis:diagnosis.value.trim(),operation:operation.value.trim(),
-    surgeryDate:surgeryDate.value,sourceBatch:sourceBatch.value.trim(),notes:notes.value.trim(),
-    missing:lines.map(t=>({text:t,done:oldMap[t]||false})),
-    status:old?.status||"unassigned",owner:old?.owner||"",previousOwner:old?.previousOwner||"",performedBy:old?.performedBy||"",
-    createdAt:old?.createdAt||new Date().toISOString(),assignedAt:old?.assignedAt||"",preparedAt:old?.preparedAt||"",completedAt:old?.completedAt||""
-  };
-  const i=state.cases.findIndex(x=>x.id===c.id);if(i>=0)state.cases[i]=c;else{state.cases.unshift(c);logEvent("case_added",c,"","إضافة حالة يدويًا")}
-  closeModal("caseModal");renderAll();
-}
-function deleteCase(){
-  const c=state.cases.find(x=>x.id===caseId.value);if(!c)return;
-  if(!confirm("حذف الحالة نهائيًا؟"))return;
-  state.cases=state.cases.filter(x=>x.id!==c.id);logEvent("deleted",c,c.owner||c.previousOwner,"حذف الحالة");
-  closeModal("caseModal");renderAll();
-}
-
-function renderHistory(){
-  historyList.innerHTML=state.events.length?state.events.slice().reverse().slice(0,250).map(e=>{
-    const c=state.cases.find(x=>x.id===e.caseId);
-    return '<div class="log"><b>'+esc(e.detail||e.type)+'</b><span>'+esc(e.resident||"")+(c?' · '+esc(caseDisplay(c)):'')+'</span><br><small>'+new Date(e.at).toLocaleString("ar-SA")+'</small></div>';
-  }).join(""):'<div class="empty">السجل فارغ.</div>';
-}
-function clearHistory(){if(confirm("مسح سجل الحركة فقط؟ لن تُحذف الحالات.")){state.events=[];renderAll()}}
-
-async function readPdf(ev){
-  const file=ev.target.files?.[0];ev.target.value="";if(!file)return;
-  try{
-    if(!window.pdfjsLib)throw new Error("PDF library not loaded");
-    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-    const data=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data}).promise;
-    let pages=[];
-    for(let p=1;p<=pdf.numPages;p++){
-      const page=await pdf.getPage(p),tc=await page.getTextContent();
-      let txt="";
-      tc.items.forEach(it=>{txt+=it.str+(it.hasEOL?"\\n":" ");});
-      pages.push(txt.trim());
-    }
-    rawImportText.value=pages.join("\\n\\n--- PAGE ---\\n\\n");
-    parseRawText(file.name);
-    importModal.classList.add("show");
-  }catch(e){
-    alert("تعذر قراءة PDF نصيًا. يمكنك فتح نافذة الاستيراد ولصق نص برنامج التنسيق يدويًا.");
-    rawImportText.value="";parseRawText(file.name);importModal.classList.add("show");
-  }
-}
-function splitCaseChunks(text){
-  text=(text||"").replace(/\\u00a0/g," ").trim();
-  if(!text)return [];
-  let chunks=text.split(/\\n\\s*(?=(?:MRN|Medical\\s*Record|الرقم\\s*الطبي|رقم\\s*الملف|رقم\\s*المريض)\\s*[:：-]?)/i).filter(x=>x.trim());
-  if(chunks.length<=1){
-    const pageChunks=text.split(/\\n\\s*--- PAGE ---\\s*\\n/i).filter(x=>x.trim());
-    if(pageChunks.length>1)chunks=pageChunks;
-  }
-  return chunks;
-}
-function pick(re,txt){const m=txt.match(re);return m?String(m[1]||"").trim():""}
-function parseChunk(txt,i,source){
-  const clean=txt.replace(/[ \\t]+/g," ");
-  const mrn=pick(/(?:MRN|Medical\\s*Record|الرقم\\s*الطبي|رقم\\s*الملف|رقم\\s*المريض)\\s*[:：-]?\\s*([A-Za-z0-9\\/-]{3,})/i,clean);
-  const diagnosis=pick(/(?:Diagnosis|\\bDx\\b|التشخيص)\\s*[:：-]?\\s*([^\\n]{2,180})/i,clean);
-  const operation=pick(/(?:Operation|Procedure|Surgery|العملية|الإجراء)\\s*[:：-]?\\s*([^\\n]{2,180})/i,clean);
-  let missing=pick(/(?:Missing|Pending|Requirements|النواقص|المطلوب|المتطلبات)\\s*[:：-]?\\s*([\\s\\S]{2,500})/i,clean);
-  if(missing)missing=missing.split(/\\n(?=(?:Notes|ملاحظات|Diagnosis|التشخيص|Operation|العملية)\\b)/i)[0];
-  const misses=missing?missing.split(/[•;،,\\n]+/).map(x=>x.replace(/^[-–—]\\s*/,"").trim()).filter(x=>x&&x.length<140).slice(0,20):[];
-  return {selected:true,mrn,patient:"",diagnosis,operation,missing:misses.join("\\n"),notes:(!mrn&&!diagnosis&&!operation)?txt.slice(0,700):"",sourceBatch:source||("PDF "+new Date().toLocaleDateString("ar-SA")),raw:txt,index:i};
-}
-function parseRawText(source=""){
-  const chunks=splitCaseChunks(rawImportText.value);
-  importDrafts=chunks.map((x,i)=>parseChunk(x,i,source));
-  if(!importDrafts.length&&rawImportText.value.trim())importDrafts=[parseChunk(rawImportText.value,0,source)];
-  renderImportPreview();
-}
-function renderImportPreview(){
-  importPreview.innerHTML=importDrafts.length?importDrafts.map((d,i)=>
-    '<div class="draft"><div class="row"><b>حالة '+(i+1)+'</b><label class="switch"><input type="checkbox" '+(d.selected?'checked':'')+' onchange="draftSet('+i+',\'selected\',this.checked)">إضافة</label></div>'+
-    '<div class="grid"><div class="field"><label>MRN</label><input value="'+esc(d.mrn)+'" oninput="draftSet('+i+',\'mrn\',this.value)"></div>'+
-    '<div class="field"><label>التشخيص</label><input value="'+esc(d.diagnosis)+'" oninput="draftSet('+i+',\'diagnosis\',this.value)"></div>'+
-    '<div class="field"><label>العملية</label><input value="'+esc(d.operation)+'" oninput="draftSet('+i+',\'operation\',this.value)"></div>'+
-    '<div class="field"><label>المصدر</label><input value="'+esc(d.sourceBatch)+'" oninput="draftSet('+i+',\'sourceBatch\',this.value)"></div></div>'+
-    '<div class="field"><label>النواقص — سطر لكل نقص</label><textarea oninput="draftSet('+i+',\'missing\',this.value)">'+esc(d.missing)+'</textarea></div>'+
-    (!d.mrn&&!d.diagnosis?'<div class="note">لم أتعرف على بنية هذه القطعة تلقائيًا؛ راجعها أو ألغ اختيارها.</div>':'')+
-    '</div>'
-  ).join(""):'<div class="empty">لا يوجد نص قابل للتحليل بعد.</div>';
-}
-function draftSet(i,k,v){if(importDrafts[i])importDrafts[i][k]=v}
-function commitImport(){
-  let n=0;
-  importDrafts.filter(d=>d.selected).forEach(d=>{
-    if(!d.mrn&&!d.diagnosis&&!d.operation)return;
-    const c={id:makeCaseId(n++),mrn:d.mrn.trim(),patient:"",diagnosis:d.diagnosis.trim(),operation:d.operation.trim(),surgeryDate:"",sourceBatch:d.sourceBatch.trim(),
-      missing:d.missing.split(/\\r?\\n/).map(x=>x.trim()).filter(Boolean).map(text=>({text,done:false})),notes:d.notes||"",status:"unassigned",owner:"",previousOwner:"",performedBy:"",createdAt:new Date().toISOString()};
-    state.cases.unshift(c);logEvent("case_imported",c,"","استيراد من PDF/نص التنسيق");
-  });
-  closeModal("importModal");renderAll();toastMsg("تمت إضافة "+n+" حالة");
-}
-
-function currentListText(){
-  const rs=activeResidents();
-  let txt="قائمة تحضير حالات الجراحة العامة\\n"+new Date().toLocaleDateString("ar-SA")+"\\n\\n";
-  rs.forEach(r=>{
-    const list=state.cases.filter(c=>c.owner===r.name&&(c.status==="assigned"||c.status==="ready"));
-    txt+="👨‍⚕️ "+r.name+" — "+list.length+" حالة\\n";
-    if(!list.length)txt+="لا توجد حالات حالية\\n";
-    list.forEach((c,i)=>{
-      txt+=(i+1)+") "+(c.mrn||c.patient||c.id)+"\\n";
-      if(c.diagnosis)txt+="التشخيص: "+c.diagnosis+"\\n";
-      if(c.operation)txt+="العملية: "+c.operation+"\\n";
-      const m=(c.missing||[]).filter(x=>!x.done).map(x=>x.text);
-      txt+="النواقص: "+(m.length?m.join("، "):"مكتملة")+"\\n";
-      txt+="الحالة: "+statusLabel(c.status)+"\\n\\n";
-    });
-    txt+="────────────\\n";
-  });
-  const extra=unassignedCases();
-  if(extra.length)txt+="\\n⚠️ زيادة غير موزعة بقرار الاستشاري: "+extra.length+" حالة\\n";
-  return txt;
-}
-async function shareCurrentList(){
-  if(!activeResidents().length){alert("أضف المقيمين أولًا.");return}
-  const text=currentListText();
-  state.batches.push({id:"B"+Date.now(),at:new Date().toISOString(),snapshot:text});
-  persist();
-  if(navigator.share){try{await navigator.share({title:"قائمة حالات المقيمين",text});return}catch(e){}}
-  try{await navigator.clipboard.writeText(text);toastMsg("تم نسخ القائمة") }catch(e){prompt("انسخ القائمة:",text)}
-}
-function exportBackup(){
-  const data={format:"GS_CASE_OWNER_V1",exportedAt:new Date().toISOString(),state};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="GS_Case_Owner_Backup_"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(a.href);
-  setTimeout(()=>{if(confirm("هل تريد فتح خيار الاستعادة أيضًا؟"))backupModal.classList.add("show")},300);
-}
-function restoreBackup(ev){
-  const f=ev.target.files?.[0];ev.target.value="";if(!f)return;
-  const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.state||d.format!=="GS_CASE_OWNER_V1")throw 0;state=d.state;persist();closeModal("backupModal");renderAll();toastMsg("تمت الاستعادة")}catch(e){alert("ملف النسخة الاحتياطية غير صالح")}};r.readAsText(f);
-}
-function closeModal(id){document.getElementById(id).classList.remove("show")}
-["caseModal","assignModal","importModal","backupModal"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target.id===id)closeModal(id)}));
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
-renderAll();
-</script>
+<script src="./seed.js"></script>
+<script src="./app.js"></script>
 </body>
 </html>
