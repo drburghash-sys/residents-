@@ -1,34 +1,16 @@
 {
-  "name": "Resident Case Tracker",
-  "short_name": "Case Tracker",
-  "description": "WhatsApp-driven surgical case readiness and resident credit tracker.",
+  "name": "توزيع حالات العمليات",
+  "short_name": "حالات المقيمين",
+  "description": "Single-owner fair distribution of general surgery cases to residents.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f7f8",
-  "theme_color": "#0f4c5c",
+  "lang": "ar",
+  "dir": "rtl",
+  "background_color": "#eef3f5",
+  "theme_color": "#123b4a",
   "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "share_target": {
-    "action": "./index.html",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
 }
