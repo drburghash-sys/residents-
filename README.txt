@@ -1,43 +1,40 @@
-Resident Case Tracker V4 PWA
+General Surgery Resident Case Ownership — V1
 
-DEPLOYMENT
-1. Create a GitHub repository, for example: resident-case-tracker
-2. Upload all files in this ZIP to the repository root:
-   index.html
-   manifest.webmanifest
-   sw.js
-   icon-192.png
-   icon-512.png
-3. Enable GitHub Pages for the main branch / root.
-4. Open the GitHub Pages URL in Chrome on Android.
-5. Use "Add to Home screen" / "Install app".
-6. After installation, Resident Case Tracker should appear as a share target for text shared from supported Android apps such as WhatsApp.
+CURRENT WORKFLOW
+- A surgical case has exactly ONE resident owner.
+- New cases can be added manually or imported from a coordination PDF/text.
+- Distribution only touches UNASSIGNED cases. It never takes an active case away from its current resident.
+- The algorithm first raises residents with lower active loads until loads become equal.
+- Once all active resident loads are equal, a full equal layer is assigned only when there are enough cases for EVERY active resident.
+- Any remainder stays UNASSIGNED as "consultant decision surplus" for manual assignment.
+- Resident order can be changed; it is used as the stable tie-break order.
 
-IMPORTANT
-- Share-target reception requires the app to be hosted over HTTPS and installed as a PWA.
-- Opening index.html directly from Downloads will NOT register it as a WhatsApp share target.
-- Incoming messages are processed automatically when they contain CASE_ID and RESIDENT_NAME.
-- Post-op message example:
-  POST_OP=YES
-  CASE_ID=GS-260921-1234
-  OPERATED_BY=Dr Ahmed
+CASE LIFECYCLE
+1) UNASSIGNED
+2) ASSIGNED / under preparation
+3) READY — preparation complete and the case remains fixed to that resident
+4) DONE — operation completed by that resident
+If the resident fails to prepare/keep the case, it becomes CONSULTANT ONLY and is never reassigned to another resident.
 
-FOLLOW-UP CREDIT RULES IMPLEMENTED
-- Every pending requirement newly changed to DONE by a resident = +1 current balance.
-- Re-sending an already DONE item gives no extra credit.
-- Adding a new requirement gives no credit until it is actually completed.
-- Operation recorded after surgery = -1 from the operating resident.
-- If a Missed Priority Resident was recorded before surgery, successful post-op processing gives that resident +1 compensation.
-- "This Week" is calculated automatically from Monday and does not need a manual reset.
-- Current Balance does not reset automatically.
+REPLACEMENT
+- Optional automatic replacement is enabled by default.
+- After a resident completes the operation, the first currently unassigned case can be assigned to the same resident as a replacement.
+- Failed cases do NOT automatically generate a replacement; they are handled at the next fair distribution.
 
-PRIVACY
-The app stores data locally in the browser/PWA storage on your device. Use Backup regularly.
+PDF IMPORT
+- PDF text is read locally in the browser using PDF.js.
+- The import screen always requires review before cases are committed.
+- If PDF text order is poor, paste the coordination-program text into the same importer and re-parse.
+- No PDF is uploaded by this static GitHub Pages app.
 
+STORAGE
+- Data is stored in localStorage on the device.
+- Backup exports a JSON snapshot.
+- The previous V5 localStorage data is not deleted. On first launch of this version, residents and old cases are migrated into the new data model.
 
-V5 UPDATE
-- WhatsApp follow-up messages contain CURRENT PENDING REQUIREMENTS ONLY.
-- Completed requirements disappear from the next shared message.
-- The first valid resident message that changes an item from PENDING to DONE receives +1 credit.
-- Later duplicate DONE reports for the same item receive 0 credit.
-- After processing a resident update, the app offers Share Updated Pending List.
+BACKUP OF PREVIOUS VERSION
+- Git branch: backup-v5-before-case-ownership
+
+MULTI-DEVICE NOTE
+- This build is an administrator/device-local workflow.
+- Direct resident updates from separate phones require a shared backend such as Firebase; localStorage alone cannot synchronize multiple devices safely.
