@@ -28,7 +28,7 @@ function loadState(){
   s.events.push(eventObj('migration','','','إنشاء التطبيق الموحد واستيراد الحالات الحالية من النسخة المرفقة'));
   localStorage.setItem(KEY,JSON.stringify(s));return normalizeState(s);
 }
-function normalizeState(s){s.settings||={};if(s.settings.includeNames===undefined)s.settings.includeNames=true;if(s.settings.autoReplacement===undefined)s.settings.autoReplacement=true;s.settings.groupTitle||='توزيع حالات الجراحة العامة';s.events||=[];s.residents||=[];s.cases||=[];s.residents.forEach(r=>{if(r.compensation==null)r.compensation=0;if(r.operations==null)r.operations=0;if(r.failed==null)r.failed=0;if(r.active==null)r.active=true});s.cases.forEach(c=>{c.custom||=[];c.checklist||={};c.ownerState||='unassigned';if(c.archived==null)c.archived=false;if(c.operationPoints==null&&c.completedAt)c.operationPoints=(c.pathway==='emergency'?(c.emergencyOptimization==='non_optimized'?4:3):2);if(c.orHours==null)c.orHours=0});(window.LEGACY_COMPLETED_STATS||[]).forEach(row=>{const [id,end,proc,points,surgeon,hours]=row,c=s.cases.find(x=>x.id===id);if(c&&!c.completedAt){c.completedAt=end;c.actualProcedure=proc;c.operationPoints=points;c.performedBy=surgeon;c.orHours=hours||0;c.ownerState='done';c.archived=true}});return s}
+function normalizeState(s){s.settings||={};if(s.settings.includeNames===undefined)s.settings.includeNames=true;if(s.settings.autoReplacement===undefined)s.settings.autoReplacement=true;s.settings.groupTitle||='توزيع حالات الجراحة العامة';s.events||=[];s.residents||=[];s.cases||=[];s.residents.forEach(r=>{if(r.compensation==null)r.compensation=0;if(r.operations==null)r.operations=0;if(r.failed==null)r.failed=0;if(r.active==null)r.active=true});s.cases.forEach(c=>{c.custom||=[];c.checklist||={};c.ownerState||='unassigned';if(c.archived==null)c.archived=false;if(c.operationPoints==null&&c.completedAt)c.operationPoints=(c.pathway==='emergency'?(c.emergencyOptimization==='non_optimized'?4:3):2);if(c.orHours==null)c.orHours=0;if(c.pathway==='emergency'&&c.ownerState!=='done'){c.residentOwner='';c.ownerState='unassigned'}});(window.LEGACY_COMPLETED_STATS||[]).forEach(row=>{const [id,end,proc,points,surgeon,hours]=row,c=s.cases.find(x=>x.id===id);if(c&&!c.completedAt){c.completedAt=end;c.actualProcedure=proc;c.operationPoints=points;c.performedBy=surgeon;c.orHours=hours||0;c.ownerState='done';c.archived=true}});return s}
 function ensureResidentOn(s,name,active=true){name=String(name||'').trim();if(!name)return;let r=s.residents.find(x=>x.name.toLowerCase()===name.toLowerCase());if(!r)s.residents.push({id:'R'+Date.now()+Math.random(),name,active,compensation:0,operations:0,failed:0,createdAt:new Date().toISOString()})}
 function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function eventObj(type,caseId='',resident='',detail=''){return {id:'E'+Date.now()+Math.random(),type,caseId,resident,detail,at:new Date().toISOString()}}
@@ -45,10 +45,11 @@ function readiness(c){
   if(all.length===1&&all[0].key==='documents')return {key:'signature',label:'انتظار التوقيع',missing:all};
   return {key:'notready',label:'غير جاهز',missing:all};
 }
-function ownerLabel(c){if(c.ownerState==='consultant')return 'استشاري فقط';if(c.ownerState==='done')return 'مكتملة';return c.residentOwner||'غير موزعة'}
-function currentLoad(name){return activeCases().filter(c=>c.ownerState==='assigned'&&c.residentOwner===name).length}
-function readyLoad(name){return activeCases().filter(c=>c.ownerState==='assigned'&&c.residentOwner===name&&readiness(c).key==='ready').length}
-function unassigned(){return activeCases().filter(c=>c.ownerState==='unassigned'&&!c.residentOwner)}
+function ownerLabel(c){if(c.ownerState==='consultant')return 'استشاري فقط';if(c.ownerState==='done')return 'مكتملة';if(c.pathway==='emergency')return 'طوارئ — خارج التوزيع';return c.residentOwner||'غير موزعة'}
+function distributableCase(c){return c.pathway!=='emergency'}
+function currentLoad(name){return activeCases().filter(c=>distributableCase(c)&&c.ownerState==='assigned'&&c.residentOwner===name).length}
+function readyLoad(name){return activeCases().filter(c=>distributableCase(c)&&c.ownerState==='assigned'&&c.residentOwner===name&&readiness(c).key==='ready').length}
+function unassigned(){return activeCases().filter(c=>distributableCase(c)&&c.ownerState==='unassigned'&&!c.residentOwner)}
 function caseTitle(c){return `${c.patientName||'بدون اسم'} — ${c.mrn||c.id}`}
 function pathLabel(p){return ({elective:'Elective',day:'DSU / Day Surgery',inpatient:'Inpatient',emergency:'Emergency',minor:'Minor'})[p]||p||'—'}
 function operationPointsFor(c,opt){return c?.pathway==='emergency'?(opt==='non_optimized'?4:3):2}
@@ -70,7 +71,8 @@ function caseCard(c){
   const r=readiness(c);const misses=r.missing;const ownerBadge=c.ownerState==='consultant'?'consultant':c.residentOwner?'assigned':'unassigned';
   let actions=`<button class="btn secondary" onclick="openCase('${c.id}')">تعديل</button>`;
   if(!c.archived&&c.ownerState!=='done'){
-    if(c.ownerState==='unassigned')actions=`<button class="btn dark" onclick="openAssign('${c.id}')">تعيين</button>`+actions;
+    if(c.ownerState==='unassigned'&&c.pathway!=='emergency')actions=`<button class="btn dark" onclick="openAssign('${c.id}')">تعيين</button>`+actions;
+    if(c.pathway==='emergency'&&c.ownerState==='unassigned')actions=`<button class="btn danger" onclick="openOperation('${c.id}')">✅ تمت عملية الطوارئ</button>`+actions;
     if(c.ownerState==='assigned')actions=`<button class="btn ${r.key==='ready'?'ok':'secondary'}" onclick="openReply('${c.id}')">تحديث رد المقيم</button>`+(r.key==='ready'?`<button class="btn dark" onclick="openOperation('${c.id}')">تسجيل العملية</button>`:'')+actions;
     if(c.ownerState==='consultant'&&r.key==='ready')actions=`<button class="btn violet" onclick="openOperation('${c.id}')">تمت بواسطة الاستشاري</button>`+actions;
   }
@@ -99,10 +101,16 @@ function openAssign(id){const c=state.cases.find(x=>x.id===id);if(!c||c.ownerSta
 function confirmManualAssign(){const c=state.cases.find(x=>x.id===assignCaseId),name=assignResident.value;if(!c||!name)return;assignTo(c,name,'تعيين يدوي');closeModal('assignModal');renderAll()}
 
 function renderOperations(){
-  const list=activeCases().filter(c=>readiness(c).key==='ready'&&(c.ownerState==='assigned'||c.ownerState==='consultant'));
-  operationsList.innerHTML=list.length?list.map(c=>`<div class="card orCard ${c.ownerState==='consultant'?'consultantCard':''}"><div class="row"><div><div class="name">${esc(c.patientName)} — ${esc(c.procedure||'')}</div><div class="sub">MRN ${esc(c.mrn)} · ${pathLabel(c.pathway)} · ${esc(c.diagnosis||'')}</div></div><span class="badge ${c.ownerState==='consultant'?'consultant':'assigned'}">${esc(ownerLabel(c))}</span></div><div class="actions"><button class="btn dark" onclick="openOperation('${c.id}')">تسجيل نتيجة العملية</button><button class="btn secondary" onclick="openCase('${c.id}')">فتح الحالة</button></div></div>`).join(''):'<div class="empty">لا توجد حالات جاهزة للعملية حاليًا.</div>';
+  const list=activeCases().filter(c=>c.pathway!=='emergency'&&readiness(c).key==='ready');
+  operationsList.innerHTML=list.length?list.map(c=>`<div class="card orCard ${c.ownerState==='consultant'?'consultantCard':''}"><div class="row"><div><div class="name">${esc(c.patientName||'—')} — ${esc(c.procedure||'')}</div><div class="sub">MRN ${esc(c.mrn||'—')} · ${pathLabel(c.pathway)} · ${esc(c.diagnosis||'')}</div></div><span class="badge ${c.ownerState==='consultant'?'consultant':c.residentOwner?'assigned':'unassigned'}">${esc(ownerLabel(c))}</span></div><div class="actions"><button class="btn ok" onclick="openOperation('${c.id}')">✅ تمت العملية</button><button class="btn secondary" onclick="openCase('${c.id}')">فتح الحالة</button></div></div>`).join(''):'<div class="empty">لا توجد حالات جاهزة للعملية حاليًا.</div>';
 }
-function openOperation(id){const c=state.cases.find(x=>x.id===id);if(!c)return;operationCaseId=id;operationCaseInfo.textContent=caseTitle(c)+' — صاحب الحالة: '+(c.residentOwner||c.previousOwner||'استشاري');operationOutcome.value=c.ownerState==='consultant'?'consultant':'owner';actualOperator.value='';officialReason.value='مناوبة';operationProcedure.value=c.actualProcedure||c.procedure||'';orDurationMinutes.value=c.orHours?Math.round(c.orHours*60):'';emergencyOptimization.value=c.emergencyOptimization||'optimized';renderOperationReason();operationModal.classList.add('show')}
+function openEmergencyOperation(){emPatient.value='';emMrn.value='';emDiagnosis.value='';emProcedure.value='';emOptimization.value='optimized';emDuration.value='';emOperator.value='';emergencyModal.classList.add('show')}
+function saveEmergencyOperation(){
+  const proc=emProcedure.value.trim();if(!proc){alert('أدخل اسم العملية.');return}
+  const c={id:'EM-'+Date.now(),mrn:emMrn.value.trim(),patientName:emPatient.value.trim(),diagnosis:emDiagnosis.value.trim(),procedure:proc,actualProcedure:proc,pathway:'emergency',archived:true,checklist:{},custom:[],notes:'',residentOwner:'',ownerState:'done',performedBy:emOperator.value.trim()||'Consultant',emergencyOptimization:emOptimization.value,operationPoints:emOptimization.value==='non_optimized'?4:3,orHours:Math.max(0,(Number(emDuration.value)||0)/60),completedAt:new Date().toISOString(),createdAt:new Date().toISOString(),history:[]};
+  state.cases.unshift(c);logEvent('emergency_operation',c,'',`تم تسجيل عملية طوارئ مباشرة — ${c.operationPoints} نقاط`);closeModal('emergencyModal');renderAll();toastMsg('تمت إضافة عملية الطوارئ للتقرير الشهري')
+}
+function openOperation(id){const c=state.cases.find(x=>x.id===id);if(!c)return;operationCaseId=id;operationCaseInfo.textContent=caseTitle(c)+' — صاحب الحالة: '+(c.residentOwner||c.previousOwner||'استشاري');operationOutcome.value=(c.pathway==='emergency'||!c.residentOwner||c.ownerState==='consultant')?'consultant':'owner';actualOperator.value='';officialReason.value='مناوبة';operationProcedure.value=c.actualProcedure||c.procedure||'';orDurationMinutes.value=c.orHours?Math.round(c.orHours*60):'';emergencyOptimization.value=c.emergencyOptimization||'optimized';renderOperationReason();operationModal.classList.add('show')}
 function renderOperationReason(){officialReasonWrap.style.display=operationOutcome.value==='official_miss'?'block':'none';const c=state.cases.find(x=>x.id===operationCaseId);emergencyStatsWrap.style.display=c?.pathway==='emergency'?'block':'none';operationPointPreview.textContent='النقاط: '+operationPointsFor(c,emergencyOptimization.value)}
 function giveNormalReplacement(name){if(!state.settings.autoReplacement||!name)return null;const c=unassigned()[0];if(c){assignTo(c,name,'حالة بديلة بعد العملية');return c}return null}
 function confirmOperation(){
@@ -123,15 +131,16 @@ function failPreparation(){const c=state.cases.find(x=>x.id===replyCaseId);if(!c
 
 function editorRow(k,l,x){return `<div class="checkitem"><span>${l}</span><label><input type="checkbox" data-req="${k}" ${x.required?'checked':''} onchange="syncDoneDisabled('${k}')"> مطلوب</label><label><input type="checkbox" data-done="${k}" ${x.done?'checked':''} ${!x.required?'disabled':''}> تم</label></div>`}
 function syncDoneDisabled(k){const req=document.querySelector(`[data-req="${k}"]`),done=document.querySelector(`[data-done="${k}"]`);done.disabled=!req.checked;if(!req.checked)done.checked=false}
+function syncCasePathwayRules(){const emergency=pathway.value==='emergency';caseResident.disabled=emergency;emergencyNoDistribution.style.display=emergency?'block':'none';if(emergency)caseResident.value=''}
 function residentOptions(selected=''){return `<option value="">غير موزعة</option>`+state.residents.map(r=>`<option value="${esc(r.name)}" ${r.name===selected?'selected':''}>${esc(r.name)}${r.active?'':' (موقوف)'}</option>`).join('')}
 function openCase(id=''){
   const c=id?state.cases.find(x=>x.id===id):null;caseModalTitle.textContent=c?'تعديل الحالة':'إضافة حالة';caseId.value=c?.id||'';patientName.value=c?.patientName||'';mrn.value=c?.mrn||'';pathway.value=c?.pathway||'elective';diagnosis.value=c?.diagnosis||'';procedure.value=c?.procedure||'';caseNotes.value=c?.notes||'';caseResident.innerHTML=residentOptions(c?.residentOwner||'');
-  const chk=c?.checklist||Object.fromEntries(CHECKS.map(([k])=>[k,{required:true,done:false}]));checklistEditor.innerHTML=CHECKS.map(([k,l])=>editorRow(k,l,chk[k]||{required:false,done:false})).join('');archiveBtn.style.display=c?'block':'none';archiveBtn.textContent=c?.archived?'إعادة للحالات الحالية':'أرشفة';caseModal.classList.add('show')
+  const chk=c?.checklist||Object.fromEntries(CHECKS.map(([k])=>[k,{required:true,done:false}]));checklistEditor.innerHTML=CHECKS.map(([k,l])=>editorRow(k,l,chk[k]||{required:false,done:false})).join('');archiveBtn.style.display=c?'block':'none';archiveBtn.textContent=c?.archived?'إعادة للحالات الحالية':'أرشفة';caseModal.classList.add('show');syncCasePathwayRules()
 }
 function saveCase(){
   if(!mrn.value.trim()&&!patientName.value.trim()){alert('أدخل اسم المريض أو رقم الملف.');return}let c=state.cases.find(x=>x.id===caseId.value);const isNew=!c;if(!c)c={id:'CASE-'+Date.now(),createdAt:new Date().toISOString(),archived:false,ownerState:'unassigned',custom:[],history:[]};
   c.patientName=patientName.value.trim();c.mrn=mrn.value.trim();c.pathway=pathway.value;c.diagnosis=diagnosis.value.trim();c.procedure=procedure.value.trim();c.notes=caseNotes.value.trim();c.checklist={};CHECKS.forEach(([k])=>{c.checklist[k]={required:document.querySelector(`[data-req="${k}"]`).checked,done:document.querySelector(`[data-done="${k}"]`).checked}});
-  const newOwner=caseResident.value;if(c.ownerState!=='consultant'&&c.ownerState!=='done'){if(newOwner){c.residentOwner=newOwner;c.ownerState='assigned'}else{c.residentOwner='';c.ownerState='unassigned'}}c.updatedAt=new Date().toISOString();if(isNew){state.cases.unshift(c);logEvent('case_added',c,c.residentOwner,'إضافة حالة جديدة')}closeModal('caseModal');renderAll()
+  if(c.pathway==='emergency'){CHECKS.forEach(([k])=>c.checklist[k]={required:false,done:true});c.residentOwner='';if(c.ownerState!=='done')c.ownerState='unassigned'}else{const newOwner=caseResident.value;if(c.ownerState!=='consultant'&&c.ownerState!=='done'){if(newOwner){c.residentOwner=newOwner;c.ownerState='assigned'}else{c.residentOwner='';c.ownerState='unassigned'}}}c.updatedAt=new Date().toISOString();if(isNew){state.cases.unshift(c);logEvent('case_added',c,c.residentOwner,'إضافة حالة جديدة')}closeModal('caseModal');renderAll()
 }
 function toggleArchiveCase(){const c=state.cases.find(x=>x.id===caseId.value);if(!c)return;c.archived=!c.archived;logEvent('archive',c,c.residentOwner,c.archived?'أرشفة الحالة':'إعادة الحالة من الأرشيف');closeModal('caseModal');renderAll()}
 
@@ -142,7 +151,7 @@ function buildGroupReport(){
   const date=new Date().toLocaleDateString('ar-SA');let t=`📋 ${state.settings.groupTitle}\n${date}\n\n━━━━━━━━ ملخص التوزيع ━━━━━━━━\n`;
   const rs=activeResidents();if(!rs.length)t+='لا يوجد مقيمون مضافون بعد.\n';
   rs.forEach(r=>{t+=`${r.name}: ${currentLoad(r.name)} حالة | جاهز ${readyLoad(r.name)} | عمليات ${r.operations||0} | تعويض ${r.compensation?('+'+r.compensation):'0'}\n`});
-  t+=`\nغير موزع: ${unassigned().length} | استشاري فقط: ${activeCases().filter(c=>c.ownerState==='consultant').length}\n`;
+  t+=`\nغير موزع: ${unassigned().length} | استشاري فقط: ${activeCases().filter(c=>c.pathway!=='emergency'&&c.ownerState==='consultant').length}\n`;
   rs.forEach(r=>{const list=activeCases().filter(c=>c.ownerState==='assigned'&&c.residentOwner===r.name);t+=`\n━━━━━━━━ ${r.name} — ${list.length} حالات ━━━━━━━━\n`;if(!list.length)t+='لا توجد حالات حالية\n';list.forEach((c,i)=>{t+=caseLineForGroup(c,i)+'──────────────\n'})});
   const comps=rs.filter(r=>r.compensation>0);if(comps.length){t+='\n━━━━━━━━ التعويضات المستحقة ━━━━━━━━\n';comps.forEach(r=>t+=`• ${r.name}: +${r.compensation}\n`)}
   const cons=activeCases().filter(c=>c.ownerState==='consultant');if(cons.length)t+=`\nاستشاري فقط: ${cons.length} حالة (لا يعاد توزيعها على المقيمين).\n`;
@@ -158,6 +167,6 @@ function saveSettings(){state.settings.groupTitle=groupTitle.value.trim()||'تو
 function exportBackup(){const data={format:'UNIFIED_SURGERY_RESIDENTS_V1',exportedAt:new Date().toISOString(),state};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Unified_Surgery_Backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
 function restoreBackup(ev){const f=ev.target.files?.[0];ev.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.state||d.format!=='UNIFIED_SURGERY_RESIDENTS_V1')throw 0;state=normalizeState(d.state);persist();closeModal('settingsModal');renderAll();toastMsg('تمت الاستعادة')}catch(e){alert('ملف النسخة الاحتياطية غير صالح')}};r.readAsText(f)}
 function closeModal(id){document.getElementById(id).classList.remove('show')}
-['caseModal','replyModal','operationModal','assignModal','settingsModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)closeModal(id)}));
+['caseModal','replyModal','operationModal','emergencyModal','assignModal','settingsModal'].forEach(id=>document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)closeModal(id)}));
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 renderAll();
