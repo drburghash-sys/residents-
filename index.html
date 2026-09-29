@@ -165,7 +165,11 @@
   <div class="field" style="margin-top:12px"><label>اسم القروب / عنوان الرسالة</label><input id="groupTitle"></div>
   <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="includeNames" type="checkbox" style="width:auto"> إظهار اسم المريض في رسالة القروب (مع MRN)</label></div>
   <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="autoReplacement" type="checkbox" style="width:auto"> إعطاء حالة بديلة تلقائيًا بعد تسجيل العملية إذا كانت هناك حالة غير موزعة</label></div>
-  <div class="actions"><label class="btn secondary" style="display:inline-block">استعادة نسخة احتياطية<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label></div>
+  <div id="backupStatus" class="note info">آخر نسخة احتياطية: لم يتم بعد</div>
+  <div class="actions">
+    <button class="btn dark" onclick="exportBackup()">إنشاء نسخة احتياطية الآن</button>
+    <label class="btn secondary" style="display:inline-block">استعادة نسخة احتياطية<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label>
+  </div>
   <div class="footer-actions"><button class="btn dark" onclick="saveSettings()">حفظ الإعدادات</button></div>
 </div></div>
 
