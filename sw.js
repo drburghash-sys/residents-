@@ -1,4 +1,4 @@
-const CACHE="unified-surgery-v1-20260929a";
+const CACHE="unified-surgery-v1-20260929b";
 const ASSETS=["./","./index.html","./style.css","./seed.js","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([
