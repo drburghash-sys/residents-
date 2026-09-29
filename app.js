@@ -28,7 +28,7 @@ function loadState(){
   s.events.push(eventObj('migration','','','إنشاء التطبيق الموحد واستيراد الحالات الحالية من النسخة المرفقة'));
   localStorage.setItem(KEY,JSON.stringify(s));return normalizeState(s);
 }
-function normalizeState(s){s.settings||={};if(s.settings.includeNames===undefined)s.settings.includeNames=true;if(s.settings.autoReplacement===undefined)s.settings.autoReplacement=true;s.settings.groupTitle||='توزيع حالات الجراحة العامة';if(s.settings.lastBackupAt==null)s.settings.lastBackupAt='';s.events||=[];s.residents||=[];s.cases||=[];if(!Array.isArray(s.legacyMonthlyRecovered))s.legacyMonthlyRecovered=structuredClone(window.LEGACY_MONTHLY_RECOVERED||[]);s.residents.forEach(r=>{if(r.compensation==null)r.compensation=0;if(r.operations==null)r.operations=0;if(r.failed==null)r.failed=0;if(r.active==null)r.active=true});s.cases.forEach(c=>{c.custom||=[];c.checklist||={};c.ownerState||='unassigned';if(c.archived==null)c.archived=false;if(c.operationPoints==null&&c.completedAt)c.operationPoints=(c.pathway==='emergency'?(c.emergencyOptimization==='non_optimized'?4:3):2);if(c.orHours==null)c.orHours=0;if(c.pathway==='emergency'&&c.ownerState!=='done'){c.residentOwner='';c.ownerState='unassigned'}});(window.LEGACY_COMPLETED_STATS||[]).forEach(row=>{const [id,end,proc,points,surgeon,hours]=row,c=s.cases.find(x=>x.id===id);if(c&&!c.completedAt){c.completedAt=end;c.actualProcedure=proc;c.operationPoints=points;c.performedBy=surgeon;c.orHours=hours||0;c.ownerState='done';c.archived=true}});return s}
+function normalizeState(s){s.settings||={};if(s.settings.includeNames===undefined)s.settings.includeNames=true;if(s.settings.autoReplacement===undefined)s.settings.autoReplacement=true;s.settings.groupTitle||='توزيع حالات الجراحة العامة';if(s.settings.lastBackupAt==null)s.settings.lastBackupAt='';s.events||=[];s.residents||=[];s.deletedResidents||=[];s.cases||=[];if(!Array.isArray(s.legacyMonthlyRecovered))s.legacyMonthlyRecovered=structuredClone(window.LEGACY_MONTHLY_RECOVERED||[]);s.residents.forEach(r=>{if(r.compensation==null)r.compensation=0;if(r.operations==null)r.operations=0;if(r.failed==null)r.failed=0;if(r.active==null)r.active=true});s.cases.forEach(c=>{c.custom||=[];c.checklist||={};c.ownerState||='unassigned';if(c.archived==null)c.archived=false;if(c.operationPoints==null&&c.completedAt)c.operationPoints=(c.pathway==='emergency'?(c.emergencyOptimization==='non_optimized'?4:3):2);if(c.orHours==null)c.orHours=0;if(c.pathway==='emergency'&&c.ownerState!=='done'){c.residentOwner='';c.ownerState='unassigned'}});(window.LEGACY_COMPLETED_STATS||[]).forEach(row=>{const [id,end,proc,points,surgeon,hours]=row,c=s.cases.find(x=>x.id===id);if(c&&!c.completedAt){c.completedAt=end;c.actualProcedure=proc;c.operationPoints=points;c.performedBy=surgeon;c.orHours=hours||0;c.ownerState='done';c.archived=true}});return s}
 function ensureResidentOn(s,name,active=true){name=String(name||'').trim();if(!name)return;let r=s.residents.find(x=>x.name.toLowerCase()===name.toLowerCase());if(!r)s.residents.push({id:'R'+Date.now()+Math.random(),name,active,compensation:0,operations:0,failed:0,createdAt:new Date().toISOString()})}
 function persist(){localStorage.setItem(KEY,JSON.stringify(state))}
 function eventObj(type,caseId='',resident='',detail=''){return {id:'E'+Date.now()+Math.random(),type,caseId,resident,detail,at:new Date().toISOString()}}
@@ -80,13 +80,28 @@ function caseCard(c){
 }
 
 function renderResidents(){
-  const rs=state.residents;residentTable.innerHTML=rs.length?rs.map((r,i)=>`<div class="resRow"><span>${i+1}</span><div><b>${esc(r.name)}</b><div class="orderBtns"><button onclick="moveResident(${i},-1)">↑</button><button onclick="moveResident(${i},1)">↓</button></div></div><span class="big">${currentLoad(r.name)}</span><span>${readyLoad(r.name)}</span><span>${r.operations||0}</span><span class="comp">${r.compensation?('+'+r.compensation):'0'}</span><span class="hideMobile"><button class="btn ${r.active?'ok':'secondary'}" onclick="toggleResident(${i})">${r.active?'نشط':'موقوف'}</button></span></div>`).join(''):'<div class="empty">أضف أسماء المقيمين أولًا.</div>';
+  const rs=state.residents;residentTable.innerHTML=rs.length?rs.map((r,i)=>`<div class="resRow"><span>${i+1}</span><div><b>${esc(r.name)}</b><div class="orderBtns"><button onclick="moveResident(${i},-1)">↑</button><button onclick="moveResident(${i},1)">↓</button><button class="dangerMini" onclick="removeResident(${i})">حذف</button></div></div><span class="big">${currentLoad(r.name)}</span><span>${readyLoad(r.name)}</span><span>${r.operations||0}</span><span class="comp">${r.compensation?('+'+r.compensation):'0'}</span><span class="hideMobile"><button class="btn ${r.active?'ok':'secondary'}" onclick="toggleResident(${i})">${r.active?'نشط':'موقوف'}</button></span></div>`).join(''):'<div class="empty">أضف أسماء المقيمين أولًا.</div>';
   const extras=unassigned();surplusList.innerHTML=extras.length?extras.map(c=>`<div class="mini"><div class="row"><div><b>${esc(caseTitle(c))}</b><span>${esc(c.diagnosis||'')} · ${readiness(c).label}</span></div><button class="btn warn" onclick="openAssign('${c.id}')">تعيين يدوي</button></div></div>`).join(''):'<div class="empty">لا توجد حالات غير موزعة.</div>';
   const comp=activeResidents().filter(r=>r.compensation>0);distributionStatus.innerHTML=`<div class="mini"><b>الحالات غير الموزعة: ${extras.length}</b>المقيمون النشطون: ${activeResidents().length}${comp.length?` · أصحاب التعويض: ${comp.map(r=>`${esc(r.name)} +${r.compensation}`).join('، ')}`:''}</div>`;
 }
 function addResidentPrompt(){const name=(prompt('اسم المقيم')||'').trim();if(!name)return;if(state.residents.some(r=>r.name.toLowerCase()===name.toLowerCase())){alert('المقيم موجود مسبقًا');return}state.residents.push({id:'R'+Date.now(),name,active:true,compensation:0,operations:0,failed:0,createdAt:new Date().toISOString()});logEvent('resident','',name,'إضافة مقيم');renderAll()}
 function moveResident(i,d){const j=i+d;if(j<0||j>=state.residents.length)return;[state.residents[i],state.residents[j]]=[state.residents[j],state.residents[i]];renderAll()}
 function toggleResident(i){const r=state.residents[i];if(!r)return;r.active=!r.active;renderAll()}
+function removeResident(i){
+  const r=state.residents[i];if(!r)return;
+  const affected=activeCases().filter(c=>c.pathway!=='emergency'&&c.ownerState==='assigned'&&c.residentOwner===r.name);
+  let msg='حذف المقيم '+r.name+' من القائمة؟';
+  if(affected.length)msg+='\n\nسيتم إرجاع '+affected.length+' حالة حالية إلى «غير موزعة» لتدخل في التوزيع من جديد، مع بقاء حالة التجهيز كما هي.';
+  if(Number(r.compensation||0)>0)msg+='\n\nرصيد التعويض الحالي (+'+r.compensation+') لن يبقى ضمن التوزيع بعد حذف المقيم.';
+  msg+='\n\nالعمليات السابقة والسجل التاريخي لن تُحذف.';
+  if(!confirm(msg))return;
+  affected.forEach(c=>{c.residentOwner='';c.ownerState='unassigned';c.assignedAt='';c.updatedAt=new Date().toISOString()});
+  state.deletedResidents.push({...structuredClone(r),removedAt:new Date().toISOString(),returnedCases:affected.length});
+  state.residents.splice(i,1);
+  state.events.push(eventObj('resident_removed','',r.name,'حذف المقيم وإعادة '+affected.length+' حالة للتوزيع'));
+  renderAll();
+  toastMsg(affected.length?'تم حذف المقيم وإعادة '+affected.length+' حالة للتوزيع':'تم حذف المقيم');
+}
 function assignTo(c,name,reason='تعيين'){if(!c||c.ownerState!=='unassigned')return false;c.residentOwner=name;c.ownerState='assigned';c.assignedAt=new Date().toISOString();logEvent('assign',c,name,reason);return true}
 function distributeCases(){
   const rs=activeResidents();if(!rs.length){alert('أضف مقيمين نشطين أولًا.');return}let q=unassigned().slice();if(!q.length){toastMsg('لا توجد حالات غير موزعة');return}let n=0;
