@@ -7,81 +7,89 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <title>مسار العمليات والمقيمين</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./or-style.css">
 </head>
 <body>
 <div class="app">
-<header><div class="head"><div class="brand"><h1>مسار العمليات والمقيمين</h1><p>ملف واحد للمريض • تجهيز • توزيع • عملية • تقرير القروب</p></div><div class="topbar"><button class="btn primary" onclick="openCase()">+ حالة</button><button class="btn ghost" onclick="openSettings()">الإعدادات</button></div></div></header>
+<header>
+  <div class="head">
+    <div class="brand"><h1>مسار العمليات والمقيمين</h1><p>أيام العمليات • Patient Pool • تجهيز القوائم • العمليات • التقرير الشهري</p></div>
+    <div class="topbar"><button class="btn primary" onclick="openCase('')">+ مريض</button><button class="btn ghost" onclick="openSettings()">الإعدادات</button></div>
+  </div>
+</header>
+
 <div class="wrap">
   <div class="tabs">
-    <button id="tabDashboard" class="tab active" onclick="showTab('dashboard')">الرئيسية</button>
-    <button id="tabCases" class="tab" onclick="showTab('cases')">الحالات</button>
-    <button id="tabResidents" class="tab" onclick="showTab('residents')">المقيمون</button>
+    <button id="tabSchedule" class="tab active" onclick="showTab('schedule')">جدول العمليات</button>
+    <button id="tabPatients" class="tab" onclick="showTab('patients')">المرضى</button>
     <button id="tabOperations" class="tab" onclick="showTab('operations')">العمليات</button>
+    <button id="tabResidents" class="tab" onclick="showTab('residents')">المقيمون</button>
     <button id="tabMonthly" class="tab" onclick="showTab('monthly')">التقرير الشهري</button>
-    <button id="tabReports" class="tab" onclick="showTab('reports')">التقارير</button>
+    <button id="tabReports" class="tab" onclick="showTab('reports')">الرسائل والتقارير</button>
   </div>
 
-  <section id="dashboardSection">
+  <section id="scheduleSection">
+    <div class="card">
+      <div class="row">
+        <div><div class="name">جدول أيام العمليات الشهري</div><div class="sub">الأحد DSU والخميس Elective. اليوم كامل لمقيم واحد أو أكثر، وعدد الحالات غير ثابت.</div></div>
+        <div class="field monthPick"><label>الشهر</label><input id="scheduleMonth" type="month" onchange="renderAll()"></div>
+      </div>
+      <div class="actions">
+        <button class="btn dark" onclick="createStandardDays()">إنشاء الأحد والخميس</button>
+        <button class="btn violet" onclick="openAdditionalDay()">+ يوم عمليات إضافي</button>
+        <button class="btn secondary" onclick="shareMonthlySchedule()">إرسال جدول الشهر للقروب</button>
+      </div>
+      <div class="note info">لا يوجد توزيع تلقائي للعدل أو التعويض. أنت تحدد أيام كل مقيم يدويًا بعد نزول جدول المناوبات، ويمكن أن يشترك أكثر من مقيم في نفس اليوم.</div>
+    </div>
     <div class="stats">
-      <div class="stat"><b id="dActive">0</b><span>الحالات الحالية</span></div>
-      <div class="stat"><b id="dReady">0</b><span>جاهز</span></div>
-      <div class="stat"><b id="dSign">0</b><span>انتظار توقيع</span></div>
-      <div class="stat"><b id="dNotReady">0</b><span>غير جاهز</span></div>
-      <div class="stat"><b id="dUnassigned">0</b><span>غير موزع</span></div>
-      <div class="stat"><b id="dComp">0</b><span>تعويضات مستحقة</span></div>
+      <div class="stat"><b id="sDays">0</b><span>أيام الشهر</span></div>
+      <div class="stat"><b id="sAssigned">0</b><span>تم تحديد المقيمين</span></div>
+      <div class="stat"><b id="sUnassigned">0</b><span>بدون مقيم</span></div>
+      <div class="stat"><b id="sAdditional">0</b><span>أيام إضافية</span></div>
     </div>
-    <div class="split">
-      <div class="card"><div class="name">DSU / Day Surgery</div><div id="dashDay" class="miniList" style="margin-top:10px"></div></div>
-      <div class="card"><div class="name">Elective</div><div id="dashElective" class="miniList" style="margin-top:10px"></div></div>
-    </div>
-    <div class="card"><div class="row"><div><div class="name">ما يحتاج تدخلك الآن</div><div class="sub">الحالات غير الموزعة والتعويضات والحالات الجاهزة للعملية.</div></div><button class="btn dark" onclick="showTab('residents')">فتح التوزيع</button></div><div id="attentionList" class="miniList" style="margin-top:10px"></div></div>
+    <div id="scheduleList"></div>
   </section>
 
-  <section id="casesSection" style="display:none">
-    <div class="filters">
-      <button class="chip active" data-f="active" onclick="setCaseFilter(this)">الحالية</button>
-      <button class="chip" data-f="day" onclick="setCaseFilter(this)">DSU</button>
-      <button class="chip" data-f="elective" onclick="setCaseFilter(this)">Elective</button>
-      <button class="chip" data-f="inpatient" onclick="setCaseFilter(this)">Inpatient</button>
-      <button class="chip" data-f="emergency" onclick="setCaseFilter(this)">Emergency</button>
-      <button class="chip" data-f="minor" onclick="setCaseFilter(this)">Minor</button>
-      <button class="chip" data-f="notready" onclick="setCaseFilter(this)">غير جاهز</button>
-      <button class="chip" data-f="signature" onclick="setCaseFilter(this)">انتظار توقيع</button>
-      <button class="chip" data-f="ready" onclick="setCaseFilter(this)">جاهز</button>
-      <button class="chip" data-f="consultant" onclick="setCaseFilter(this)">استشاري فقط</button>
-      <button class="chip" data-f="archive" onclick="setCaseFilter(this)">الأرشيف</button>
-    </div>
-    <div id="casesList"></div>
-  </section>
-
-  <section id="residentsSection" style="display:none">
+  <section id="patientsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">التوزيع العادل</div><div class="sub">التعويض الرسمي أولًا، ثم الأقل في عدد الحالات الحالية، ثم ترتيب الدور.</div></div><button class="btn dark" onclick="distributeCases()">توزيع الآن</button></div>
-      <div class="note info">الحالة الموجودة مع مقيم لا تُسحب منه عند إعادة التوزيع. وإذا تساوت الأحمال وبقي عدد لا يكفي للجميع، تبقى الزيادة غير موزعة لتحددها أنت.</div>
-      <div id="distributionStatus"></div>
+      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة لا يملكها مقيم بشكل دائم. تربط بيوم عمليات محدد، ويحدد من حضّرها داخل ذلك اليوم.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
     </div>
-    <div class="card">
-      <div class="row"><div><div class="name">المقيمون</div><div class="sub">الحالي = الحالات المملوكة الآن. التعويض = حالات إضافية بسبب مناوبة/عيادة/تكليف رسمي.</div></div><button class="btn secondary" onclick="addResidentPrompt()">+ مقيم</button></div>
-      <div class="tableHead"><span>#</span><span>المقيم</span><span>الحالي</span><span>جاهز</span><span>عمليات</span><span>تعويض</span><span>الحالة</span></div>
-      <div id="residentTable"></div>
+    <div class="searchRow"><input id="patientSearch" placeholder="بحث بالاسم أو MRN أو التشخيص أو العملية"><button class="btn secondary" onclick="document.getElementById('patientSearch').value='';renderPatients()">مسح</button></div>
+    <div id="patientFilters" class="filters">
+      <button class="chip active" data-f="pool" onclick="setPatientFilter(this)">Patient Pool</button>
+      <button class="chip" data-f="linked" onclick="setPatientFilter(this)">داخل قوائم</button>
+      <button class="chip" data-f="ready" onclick="setPatientFilter(this)">جاهز</button>
+      <button class="chip" data-f="notready" onclick="setPatientFilter(this)">غير جاهز</button>
+      <button class="chip" data-f="all" onclick="setPatientFilter(this)">كل النشط</button>
+      <button class="chip" data-f="archive" onclick="setPatientFilter(this)">الأرشيف</button>
     </div>
-    <div class="card"><div class="name">حالات تحتاج قرارك</div><div class="sub">الزيادة التي لم يوزعها النظام تلقائيًا.</div><div id="surplusList" style="margin-top:10px"></div></div>
+    <div id="patientsList"></div>
   </section>
 
   <section id="operationsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">العمليات</div><div class="sub">لا تدخل الحالة في التقرير الشهري إلا بعد الضغط على «تمت العملية».</div></div>
-      <button class="btn danger" onclick="openEmergencyOperation()">+ تسجيل عملية طوارئ</button></div>
-      <div class="note info">حالات الطوارئ خارج توزيع المقيمين بالكامل، وتُسجل هنا مباشرة للإحصائيات النهائية.</div>
+      <div class="row">
+        <div><div class="name">تنفيذ العمليات</div><div class="sub">لا تدخل الحالة في التقرير الشهري إلا بعد الضغط على «تمت العملية».</div></div>
+        <button class="btn danger" onclick="openEmergencyOperation()">+ تسجيل عملية طوارئ</button>
+      </div>
+      <div class="field monthPick" style="margin-top:10px"><label>الشهر</label><input id="operationsMonth" type="month" onchange="renderOperations()"></div>
+      <div class="note info">Emergency خارج توزيع أيام العمليات بالكامل، ويسجل هنا مباشرة بعد إجرائه.</div>
     </div>
-    <div class="card"><div class="name">حالات جاهزة للتنفيذ</div><div class="sub">تظهر هنا الحالات الجاهزة سواء كانت موزعة على مقيم أو غير موزعة أو محجوزة للاستشاري.</div></div>
-    <div id="operationsList"></div>
+    <div id="operationsDays"></div>
+  </section>
+
+  <section id="residentsSection" style="display:none">
+    <div class="card">
+      <div class="row"><div><div class="name">المقيمون وإحصائية أيام العمليات</div><div class="sub">العدل يدوي. التطبيق يعرض الأيام المنفردة والمشتركة فقط لتساعدك في القرار.</div></div><button class="btn dark" onclick="addResidentPrompt()">+ مقيم</button></div>
+      <div class="field monthPick" style="margin-top:10px"><label>الشهر</label><input id="residentMonth" type="month" onchange="renderResidents()"></div>
+      <div class="resTableHead"><span>المقيم</span><span>منفرد</span><span>مشترك</span><span>حالات حضّرها</span><span>عمليات أجراها</span><span>إجراء</span></div>
+      <div id="residentStatsList"></div>
+    </div>
   </section>
 
   <section id="monthlySection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">التقرير الشهري للعمليات</div><div class="sub">نفس تقرير الإحصائيات السابق، ويتحدث تلقائيًا من العمليات المسجلة.</div></div>
+      <div class="row"><div><div class="name">التقرير الشهري للعمليات</div><div class="sub">يعتمد فقط على العمليات التي سُجل أنها تمت فعليًا، مع الحفاظ على السجل القديم.</div></div>
       <div class="field monthPick"><label>الشهر</label><input id="monthlyMonth" type="month" onchange="renderMonthlyReport()"></div></div>
     </div>
     <div id="monthlyStats" class="monthlyStats"></div>
@@ -94,87 +102,126 @@
 
   <section id="reportsSection" style="display:none">
     <div class="split">
-      <div class="card"><div class="row"><div><div class="name">رسالة قروب المقيمين</div><div class="sub">ملخص العدد + جميع المقيمين وحالاتهم ونواقصهم في رسالة واحدة.</div></div></div><textarea id="groupReport" class="reportbox" readonly></textarea><div class="actions"><button class="btn dark" onclick="shareGroupReport()">إرسال/مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('groupReport')">نسخ</button></div></div>
-      <div class="card"><div class="row"><div><div class="name">تقرير الجاهزية</div><div class="sub">DSU وElective بنفس منطق تقرير التنسيق القديم.</div></div></div><textarea id="readinessReport" class="reportbox" readonly></textarea><div class="actions"><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ التقرير</button></div></div>
+      <div class="card">
+        <div class="name">رسالة جدول الشهر</div><div class="sub">كل أيام العمليات ومن أخذ كل يوم، مع ملخص عدد الأيام لكل مقيم.</div>
+        <textarea id="monthlyScheduleReport" class="reportbox" readonly></textarea>
+        <div class="actions"><button class="btn dark" onclick="shareMonthlySchedule()">مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('monthlyScheduleReport')">نسخ</button></div>
+      </div>
+      <div class="card">
+        <div class="name">رسالة قائمة يوم عمليات</div>
+        <div class="field" style="margin:8px 0"><label>اليوم</label><select id="reportDaySelect" onchange="updateDayReport()"></select></div>
+        <textarea id="dayGroupReport" class="reportbox" readonly></textarea>
+        <div class="actions"><button class="btn dark" onclick="shareSelectedDay()">مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('dayGroupReport')">نسخ</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="name">تقرير الجاهزية</div><div class="sub">يعرض Patient Pool والقوائم النشطة حسب DSU / Elective وبقية الأنواع.</div>
+      <textarea id="readinessReport" class="reportbox" readonly></textarea>
+      <div class="actions"><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ التقرير</button></div>
     </div>
     <div class="card"><div class="name">سجل الحركة</div><div id="historyList" style="margin-top:10px"></div></div>
   </section>
+</div>
+</div>
+
+<div class="modal" id="dayModal"><div class="sheet">
+  <div class="row"><h2 id="dayModalTitle" style="margin:0"></h2><button class="btn secondary" onclick="closeModal('dayModal')">إغلاق</button></div>
+  <div id="dayModalInfo" class="note info"></div>
+  <div class="actions">
+    <button id="dayAssignBtn" class="btn secondary" onclick="openDayAssignments(currentDayId)">اختيار المقيمين</button>
+    <button id="dayAddCaseBtn" class="btn dark" onclick="openLinkCase()">+ إضافة حالة من Patient Pool</button>
+    <button class="btn secondary" onclick="shareDay(currentDayId)">رسالة القروب</button>
+    <button id="dayCloseBtn" class="btn warn" onclick="closeOperatingDay(currentDayId)">إغلاق يوم العمليات</button>
+  </div>
+  <div class="section-title">حالات اليوم</div>
+  <div id="dayCaseList"></div>
+</div></div>
+
+<div class="modal" id="assignDayModal"><div class="sheet">
+  <div class="row"><h2 id="assignDayTitle" style="margin:0">اختيار المقيمين</h2><button class="btn secondary" onclick="closeModal('assignDayModal')">إغلاق</button></div>
+  <div class="note info">يمكن اختيار مقيم واحد أو أكثر لنفس القائمة.</div>
+  <div id="dayResidentChecks" class="pickerList"></div>
+  <div class="footer-actions"><button class="btn dark" onclick="saveDayAssignments()">حفظ</button></div>
+</div></div>
+
+<div class="modal" id="additionalDayModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">إضافة يوم عمليات إضافي</h2><button class="btn secondary" onclick="closeModal('additionalDayModal')">إغلاق</button></div>
+  <div class="note info">هذا ليس Emergency. هو يوم إضافي يظهر من قسم العمليات فجأة، ثم تسأل في القروب من يريد أخذه.</div>
+  <div class="grid">
+    <div class="field"><label>التاريخ</label><input id="addDayDate" type="date"></div>
+    <div class="field"><label>اسم اليوم</label><input id="addDayLabel" value="Additional OR Day"></div>
+  </div>
+  <div class="field" style="margin-top:10px"><label>ملاحظات</label><textarea id="addDayNotes"></textarea></div>
+  <div class="footer-actions"><button class="btn violet" onclick="saveAdditionalDay()">إضافة اليوم</button></div>
+</div></div>
+
+<div class="modal" id="linkCaseModal"><div class="sheet">
+  <div class="row"><h2 style="margin:0">إضافة/تعديل حالة في القائمة</h2><button class="btn secondary" onclick="closeModal('linkCaseModal')">إغلاق</button></div>
+  <div id="linkCaseDayInfo" class="note info"></div>
+  <div class="grid">
+    <div class="field"><label>الحالة</label><select id="linkCaseSelect"></select></div>
+    <div class="field"><label>من حضّر الحالة</label><select id="linkPreparedBy"></select></div>
+    <div class="field"><label>وضع الحالة في القائمة</label><select id="linkRole"><option value="main">أساسي</option><option value="reserve">احتياط</option></select></div>
+  </div>
+  <div class="footer-actions"><button class="btn dark" onclick="saveLinkCase()">حفظ في القائمة</button></div>
 </div></div>
 
 <div class="modal" id="caseModal"><div class="sheet">
   <div class="row"><h2 id="caseModalTitle" style="margin:0">حالة</h2><button class="btn secondary" onclick="closeModal('caseModal')">إغلاق</button></div>
-  <input id="caseId" type="hidden">
   <div class="grid" style="margin-top:12px">
     <div class="field"><label>اسم المريض</label><input id="patientName"></div>
     <div class="field"><label>رقم الملف MRN</label><input id="mrn"></div>
-    <div class="field"><label>المسار</label><select id="pathway" onchange="syncCasePathwayRules()"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="emergency">Emergency</option><option value="minor">Minor</option></select></div>
-    <div class="field"><label>المقيم المسؤول</label><select id="caseResident"></select><div id="emergencyNoDistribution" class="sub" style="display:none">Emergency خارج توزيع المقيمين.</div></div>
+    <div class="field"><label>نوع الحالة</label><select id="pathway"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="minor">Minor</option></select></div>
     <div class="field"><label>التشخيص</label><input id="diagnosis"></div>
-    <div class="field"><label>العملية</label><input id="procedure"></div>
+    <div class="field"><label>العملية المقترحة</label><input id="procedure"></div>
   </div>
   <div class="section-title">التجهيز</div><div id="checklistEditor" class="checkgrid"></div>
   <div class="field" style="margin-top:10px"><label>ملاحظات</label><textarea id="caseNotes"></textarea></div>
   <div class="footer-actions"><button class="btn dark" onclick="saveCase()">حفظ</button><button id="archiveBtn" class="btn warn" onclick="toggleArchiveCase()">أرشفة</button></div>
 </div></div>
 
-<div class="modal" id="replyModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">تحديث رد المقيم</h2><button class="btn secondary" onclick="closeModal('replyModal')">إغلاق</button></div>
-  <div id="replyCaseInfo" class="note info"></div>
-  <div class="actions"><button class="btn ok" onclick="completePreparation()">اكتمل التجهيز كله</button><button class="btn secondary" onclick="showPartialEditor()">اكتمل جزء</button><button class="btn danger" onclick="failPreparation()">لم يُكمل الحالة</button></div>
-  <div id="partialEditor" style="display:none"><div class="section-title">حدد ما تم إنجازه</div><div id="replyChecklist" class="checkgrid"></div><div class="footer-actions"><button class="btn dark" onclick="savePartialReply()">حفظ التحديث</button></div></div>
-</div></div>
-
 <div class="modal" id="operationModal"><div class="sheet">
   <div class="row"><h2 style="margin:0">تأكيد إتمام العملية</h2><button class="btn secondary" onclick="closeModal('operationModal')">إغلاق</button></div>
-  <div id="operationCaseInfo" class="note info"></div>
-  <div class="field"><label>النتيجة</label><select id="operationOutcome" onchange="renderOperationReason()"><option value="owner">أجراها صاحب الحالة</option><option value="official_miss">صاحب الحالة حُرم بعذر رسمي وأجراها غيره</option><option value="consultant">أجراها الاستشاري</option></select></div>
-  <div id="officialReasonWrap" style="display:none;margin-top:10px"><div class="field"><label>سبب الحرمان الرسمي</label><select id="officialReason"><option>مناوبة</option><option>Post-call</option><option>عيادة</option><option>تكليف رسمي</option><option>إجازة رسمية</option></select></div></div>
-  <div class="grid" style="margin-top:10px">
-    <div class="field"><label>العملية الفعلية</label><input id="operationProcedure"></div>
-    <div class="field"><label>استخدام غرفة العمليات بالدقائق</label><input id="orDurationMinutes" type="number" min="0" step="5" placeholder="اختياري"></div>
+  <input id="opCaseId" type="hidden">
+  <div id="opCaseInfo" class="note info"></div>
+  <div class="grid">
+    <div class="field"><label>العملية الفعلية</label><input id="opProcedure"></div>
+    <div class="field"><label>من أجرى العملية</label><input id="opOperator" placeholder="اسم المقيم أو Consultant"></div>
+    <div class="field"><label>استخدام غرفة العمليات بالدقائق</label><input id="opDuration" type="number" min="0" step="5" placeholder="اختياري"></div>
   </div>
-  <div id="emergencyStatsWrap" class="field" style="display:none;margin-top:10px"><label>Emergency Optimization</label><select id="emergencyOptimization" onchange="renderOperationReason()"><option value="optimized">Optimized — 3 points</option><option value="non_optimized">Non-Optimized — 4 points</option></select></div>
-  <div id="operationPointPreview" class="note info">النقاط: 2</div>
-  <div class="field" style="margin-top:10px"><label>من أجرى العملية فعليًا (اختياري)</label><input id="actualOperator" placeholder="اسم المقيم الآخر أو Consultant"></div>
   <div class="footer-actions"><button class="btn ok" onclick="confirmOperation()">✅ تمت العملية — أضف للتقرير الشهري</button></div>
 </div></div>
 
 <div class="modal" id="emergencyModal"><div class="sheet">
   <div class="row"><h2 style="margin:0">تسجيل عملية طوارئ</h2><button class="btn secondary" onclick="closeModal('emergencyModal')">إغلاق</button></div>
-  <div class="note info">هذه الحالة لا تدخل في توزيع المقيمين ولا في عدد الحالات لديهم. تُحفظ مباشرة كعملية مكتملة في التقرير الشهري.</div>
+  <div class="note info">Emergency لا يدخل في اختيار أيام العمليات أو قوائم المقيمين؛ يسجل هنا مباشرة بعد إجرائه.</div>
   <div class="grid">
     <div class="field"><label>اسم المريض (اختياري)</label><input id="emPatient"></div>
-    <div class="field"><label>رقم الملف MRN (اختياري)</label><input id="emMrn"></div>
+    <div class="field"><label>MRN (اختياري)</label><input id="emMrn"></div>
     <div class="field"><label>التشخيص</label><input id="emDiagnosis"></div>
     <div class="field"><label>العملية الفعلية</label><input id="emProcedure"></div>
     <div class="field"><label>Emergency Optimization</label><select id="emOptimization"><option value="optimized">Optimized — 3 points</option><option value="non_optimized">Non-Optimized — 4 points</option></select></div>
     <div class="field"><label>استخدام غرفة العمليات بالدقائق</label><input id="emDuration" type="number" min="0" step="5" placeholder="اختياري"></div>
-    <div class="field"><label>من أجرى العملية (اختياري)</label><input id="emOperator" placeholder="Consultant / اسم الطبيب"></div>
+    <div class="field"><label>من أجرى العملية</label><input id="emOperator" placeholder="Consultant / اسم الطبيب"></div>
   </div>
   <div class="footer-actions"><button class="btn danger" onclick="saveEmergencyOperation()">✅ تمت عملية الطوارئ — سجلها</button></div>
 </div></div>
 
-<div class="modal" id="assignModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">تعيين يدوي</h2><button class="btn secondary" onclick="closeModal('assignModal')">إغلاق</button></div>
-  <div id="assignInfo" class="note info"></div><div class="field"><label>المقيم</label><select id="assignResident"></select></div>
-  <div class="footer-actions"><button class="btn dark" onclick="confirmManualAssign()">تعيين</button></div>
-</div></div>
-
 <div class="modal" id="settingsModal"><div class="sheet">
-  <div class="row"><h2 style="margin:0">الإعدادات</h2><button class="btn secondary" onclick="closeModal('settingsModal')">إغلاق</button></div>
-  <div class="field" style="margin-top:12px"><label>اسم القروب / عنوان الرسالة</label><input id="groupTitle"></div>
-  <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="includeNames" type="checkbox" style="width:auto"> إظهار اسم المريض في رسالة القروب (مع MRN)</label></div>
-  <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="autoReplacement" type="checkbox" style="width:auto"> إعطاء حالة بديلة تلقائيًا بعد تسجيل العملية إذا كانت هناك حالة غير موزعة</label></div>
-  <div id="backupStatus" class="note info">آخر نسخة احتياطية: لم يتم بعد</div>
+  <div class="row"><h2 style="margin:0">الإعدادات والنسخ الاحتياطي</h2><button class="btn secondary" onclick="closeModal('settingsModal')">إغلاق</button></div>
+  <div class="field" style="margin-top:12px"><label>اسم القروب / عنوان النظام</label><input id="groupTitle"></div>
+  <div class="note info"><label style="display:flex;gap:8px;align-items:center"><input id="includeNames" type="checkbox" style="width:auto"> إظهار اسم المريض في رسائل القروب مع MRN</label></div>
+  <div id="backupStatus" class="note info"></div>
+  <div class="note">يمكن استعادة النسخة الجديدة V2 أو النسخة القديمة <b>UNIFIED_SURGERY_RESIDENTS_V1</b>. عند استعادة نسخة قديمة تتحول الحالات النشطة تلقائيًا إلى Patient Pool بدون فقد التجهيز أو التاريخ.</div>
   <div class="actions">
     <button class="btn dark" onclick="exportBackup()">إنشاء نسخة احتياطية الآن</button>
-    <label class="btn secondary" style="display:inline-block">استعادة نسخة احتياطية<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label>
+    <label class="btn secondary" style="display:inline-block">استعادة نسخة<input type="file" accept=".json,application/json" hidden onchange="restoreBackup(event)"></label>
   </div>
   <div class="footer-actions"><button class="btn dark" onclick="saveSettings()">حفظ الإعدادات</button></div>
 </div></div>
 
 <div id="toast" class="toast"></div>
-<script src="./seed.js"></script>
-<script src="./app.js"></script>
+<script src="./or-core.js"></script>
+<script src="./or-ui.js"></script>
 </body>
 </html>
