@@ -453,10 +453,41 @@ function readinessSection(path,title){
   return t;
 }
 function buildReadinessReport(){
-  let t=readinessSection("day","DSU / Day Surgery")+"\n"+readinessSection("elective","Elective");
-  if(activePatientCases().some(function(c){return c.pathway==="inpatient"}))t+="\n"+readinessSection("inpatient","Inpatient");
-  if(activePatientCases().some(function(c){return c.pathway==="minor"}))t+="\n"+readinessSection("minor","Minor");
+  const ym=$("scheduleMonth").value||defaultMonth();
+  const list=activePatientCases().slice().sort(function(a,b){
+    const pa={day:1,elective:2,inpatient:3,minor:4}[a.pathway]||9;
+    const pb={day:1,elective:2,inpatient:3,minor:4}[b.pathway]||9;
+    if(pa!==pb)return pa-pb;
+    return String(a.patientName||"").localeCompare(String(b.patientName||""));
+  });
+  let t="📋 جميع الحالات النشطة ونواقص التجهيز\n\n";
+  let lastPath="";
+  list.forEach(function(c){
+    if(c.pathway!==lastPath){
+      if(lastPath)t+="\n";
+      t+="━━━━━━━━ "+pathLabel(c.pathway)+" ━━━━━━━━\n";
+      lastPath=c.pathway;
+    }
+    const r=readiness(c),d=c.orDayId?getDay(c.orDayId):null;
+    t+="• "+(c.patientName||"—")+"\n";
+    t+="MRN: "+(c.mrn||"—")+"\n";
+    t+="العملية: "+(c.procedure||"—")+"\n";
+    if(d){
+      t+="يوم العمليات: "+gregDate(d.date)+" — "+dayKindLabel(d.kind,d)+"\n";
+      t+="حضّرها: "+(c.preparedBy||"غير محدد")+" | "+(c.dayRole==="reserve"?"احتياط":"أساسي")+"\n";
+    }else{
+      t+="الموقع: Patient Pool\n";
+    }
+    t+="النواقص: "+(r.key==="ready"?"لا يوجد — مكتمل التجهيز":r.missing.map(function(x){return x.label}).join("، "))+"\n";
+    t+="──────────────\n";
+  });
+  if(!list.length)t+="لا توجد حالات نشطة.\n";
+  t+="\n━━━━━━━━ توزيع أيام العمليات — "+monthTitle(ym)+" ━━━━━━━━\n";
+  t+=buildMonthlyScheduleText(ym);
   return t.trim();
+}
+function shareReadinessReport(){
+  shareText(buildReadinessReport(),"جميع الحالات وتوزيع أيام العمليات");
 }
 function renderReports(){
   const ym=$("scheduleMonth").value||defaultMonth();
