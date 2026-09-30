@@ -1,6 +1,6 @@
 const KEY2="surgery_or_days_v2";
 const KEY1="unified_surgery_residents_v1";
-const CHECKS=[["cxr","أشعة صدر"],["blood","تحليل دم"],["virology","Virology"],["consult","استشارات"],["anesthesia","تخدير"],["ecg","تخطيط قلب"],["documents","توقيع الأوراق"]];
+const CHECKS=[["cxr","أشعة صدر"],["blood","تحليل دم"],["virology","Virology"],["consult","استشارات"],["anesthesia","تخدير"],["ecg","تخطيط قلب"],["documents","توقيع الأوراق"],["patientContact","الاتصال بالمريض وأخذ الموافقة على يوم العملية"]];
 let state=loadState();
 let patientFilter="pool";
 let currentDayId="";
@@ -44,6 +44,9 @@ function migrateV1(old){
   s.cases=clone(old&&old.cases?old.cases:[]).map(function(c){
     c.custom=c.custom||[];
     c.checklist=c.checklist||{};
+    if(!c.completedAt&&!c.archived&&c.pathway!=="emergency"&&!c.checklist.patientContact){
+      c.checklist.patientContact={required:true,done:false};
+    }
     c.history=c.history||[];
     c.orDayId=c.orDayId||"";
     c.preparedBy=c.preparedBy||"";
