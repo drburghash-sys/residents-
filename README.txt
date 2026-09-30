@@ -1,61 +1,47 @@
-Unified General Surgery Pathway + Resident Distribution — V1
+General Surgery OR Days + Patient Pool — V2
 
-PURPOSE
-This repository now contains one simplified single-user workflow that replaces the separate Surgical Pathway / coordinator-readiness / resident case tracker workflow.
+CORE WORKFLOW
+- Sunday = DSU OR day.
+- Thursday = Elective OR day.
+- Standard OR days are generated per selected month.
+- One OR day may belong to one resident or be shared by multiple residents.
+- The number of cases per OR day is not fixed.
+- Additional OR days can be created at any date when the OR department releases extra capacity.
+- Additional-day announcement text can be shared to the residents group; assignment is then entered manually.
+- There is no automatic fairness/compensation algorithm. The consultant manually balances extra or missing OR days.
 
-CURRENT DATA
-- 24 active cases were seeded from the readiness report supplied on 2026-09-28.
-- Their readiness counts match that report:
-  DSU: 4 ready, 2 waiting for signature, 0 not ready.
-  Elective: 5 ready, 4 waiting for signature, 9 not ready.
-- Historical cases from the supplied Surgical Pathway APK backup are retained as archived seed records.
-- On first launch, the app also attempts to migrate the resident roster and matching case ownership from the previous resident tracker localStorage on the same GitHub Pages origin.
+PATIENT POOL
+- Active non-emergency cases live in Patient Pool until linked to a specific OR day.
+- A case is not permanently owned by a resident.
+- When linked to an OR day, each case may have one Prepared By resident and a role: Main or Reserve.
+- A Reserve case can be switched to Main immediately if an extra OR place becomes available.
+- Readiness remains driven by CXR, Blood, Virology, Consultations, Anesthesia, ECG and Documents/signature.
 
-ONE PATIENT RECORD
-Each patient record contains:
-- Patient name and MRN
-- DSU or Elective pathway
-- Diagnosis and procedure
-- Preparation checklist: CXR, Blood, Virology, Consultations, Anesthesia, ECG, Documents/signature
-- Resident ownership
-- Operation outcome and history
+OPERATIONS
+- A case enters the monthly report only after "Operation Done" is confirmed.
+- Prepared By and Operated By are stored separately.
+- Closing an OR day returns every unoperated case to Patient Pool while preserving its preparation status.
+- Emergency cases never enter OR-day assignment or resident distribution. They are recorded directly after the operation.
 
-READINESS
-- Ready: no required item remains incomplete.
-- Waiting for signature: the only missing item is documents/signature.
-- Not ready: at least one other required item remains incomplete.
+RESIDENTS
+- Residents choose whole OR days after the monthly on-call rota is released.
+- Shared OR days are supported.
+- Monthly resident statistics show solo OR days, shared OR days, cases prepared and operations performed.
+- Resident deletion preserves historical completed-day/operation records.
 
-RESIDENT RULES
-- One case has one resident owner only.
-- Cases already owned are never taken away during redistribution.
-- Resident reply is entered manually by the consultant: complete all, partial completion, or failed preparation.
-- Failed preparation converts the case to Consultant Only. It is not reassigned to another resident and gives no compensation.
-- Completed operation normally releases the case and, when enabled, immediately assigns the resident one unassigned replacement case.
-- If the resident prepared the case but misses the operation because of on-call, post-call, clinic, official duty, or official leave, the resident receives +1 compensation case in addition to the normal replacement logic.
-- Compensation cases are assigned before ordinary fair balancing.
-- Ordinary distribution then raises residents with lower current case loads. A remainder that cannot be assigned as a complete fairness layer stays unassigned for consultant decision.
+MESSAGES
+- Monthly OR-day schedule can be shared to the single residents WhatsApp group.
+- Each OR day can generate one group message with residents, cases, Prepared By, Main/Reserve status and missing preparation items.
+- Additional-day request message is available.
 
-WHATSAPP
-Residents do not use the app.
-The Reports screen creates ONE group message containing:
-- Resident case-count summary
-- Ready count
-- Operations count
-- Compensation balance
-- Every resident and all of that resident's current cases with MRN, diagnosis, operation and current missing requirements
-- Unassigned and Consultant Only counts
-The consultant shares this one message to the residents' WhatsApp group and enters their replies manually into the app.
+MIGRATION / BACKUP
+- New storage key: surgery_or_days_v2.
+- On first launch, the app automatically migrates local unified_surgery_residents_v1 data when present.
+- Active V1 cases become Patient Pool cases and retain their preparation data.
+- Previous resident ownership is retained only as legacy reference.
+- Completed operations, points, OR hours and recovered historical monthly statistics are preserved.
+- Restore supports both SURGERY_OR_DAYS_V2 and UNIFIED_SURGERY_RESIDENTS_V1 JSON backups.
+- V2 backup contains cases, residents, OR days, event history, monthly historical recovery data and settings.
 
-REPORTS
-- Group distribution message
-- Readiness report in the previous DSU/Elective coordinator-report style
-- Activity history
-
-STORAGE
-- Single-device localStorage workflow; no Firebase is required because residents do not use the app.
-- JSON backup/restore is available in Settings.
-- Previous resident-app data is not deleted.
-
-BACKUP BRANCHES
-- backup-v5-before-case-ownership
-- backup-before-unified-surgery-20260928
+BACKUP BRANCH
+backup-before-or-day-system-20260930
