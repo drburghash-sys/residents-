@@ -99,6 +99,11 @@ function normalizeV2(s){
   s.cases.forEach(function(c){
     c.custom=c.custom||[];
     c.checklist=c.checklist||{};
+    if(!c.completedAt&&!c.archived&&!c.checklist.patientContact){
+      c.checklist.patientContact={required:true,done:false};
+    }else if(!c.checklist.patientContact){
+      c.checklist.patientContact={required:false,done:true};
+    }
     c.history=c.history||[];
     c.orDayId=c.orDayId||"";
     c.preparedBy=c.preparedBy||"";
