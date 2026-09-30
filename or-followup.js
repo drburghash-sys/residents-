@@ -34,8 +34,12 @@
     const b=document.createElement("button");
     b.id="casesPdfBtn";
     b.className="btn dark";
-    b.textContent="PDF الحالات والنواقص";
-    b.onclick=shareCasesPdf;
+    b.textContent="تحميل PDF الحالات والنواقص";
+    b.onclick=function(e){
+      if(e){e.preventDefault();e.stopPropagation()}
+      if(typeof window.directDownloadCasesPdf==="function")return window.directDownloadCasesPdf();
+      if(typeof window.shareCasesPdf==="function")return window.shareCasesPdf();
+    };
     actions.prepend(b);
   }
 
