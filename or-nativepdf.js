@@ -158,7 +158,7 @@
     setTimeout(function(){URL.revokeObjectURL(url)},15000);
   }
 
-  window.shareCasesPdf=async function(){
+  window.directDownloadCasesPdf=async function(){
     const btn=document.getElementById("casesPdfBtn");
     if(btn){btn.disabled=true;btn.textContent="جاري تجهيز التحميل..."}
     try{
@@ -192,6 +192,13 @@
     }
   };
 
+  window.shareCasesPdf=window.directDownloadCasesPdf;
   const btn=document.getElementById("casesPdfBtn");
-  if(btn)btn.textContent="تحميل PDF الحالات والنواقص";
+  if(btn){
+    btn.textContent="تحميل PDF الحالات والنواقص";
+    btn.onclick=function(e){
+      if(e){e.preventDefault();e.stopPropagation()}
+      return window.directDownloadCasesPdf();
+    };
+  }
 })();
