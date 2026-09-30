@@ -260,6 +260,7 @@
         '<div>MRN: '+esc(c.mrn||"—")+'</div>'+
         '<div>العملية: '+esc(c.procedure||"—")+'</div>'+
         '<div>المتابعة بواسطة: '+esc(c.followUpBy||"متاحة")+'</div>'+
+        (c.consultantPrepared?'<div style="font-weight:700;color:#6c4e8a">تجهيز الاستشاري — المقيم مساعد فقط</div>':'')+
         (d?'<div>يوم العمليات: '+esc(gregDate(d.date))+' - '+esc(dayKindLabel(d.kind,d))+' - '+(c.dayRole==="reserve"?"احتياط":"أساسي")+'</div>':'<div>الموقع: Patient Pool</div>')+
         '<div style="margin-top:5px;font-weight:700">'+esc(pdfCaseStatus(c))+'</div>'+
       '</div>';
