@@ -52,7 +52,7 @@
 
   <section id="patientsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة لا يملكها مقيم بشكل دائم. تربط بيوم عمليات محدد، ويحدد من حضّرها داخل ذلك اليوم.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
+      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة تبدأ متاحة في Patient Pool، ثم تُحجز لمقيم واحد للمتابعة والتجهيز. بعد اكتمالها فقط يمكن ربطها بيوم عمليات يشارك فيه ذلك المقيم.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
     </div>
     <div class="searchRow"><input id="patientSearch" placeholder="بحث بالاسم أو MRN أو التشخيص أو العملية"><button class="btn secondary" onclick="document.getElementById('patientSearch').value='';renderPatients()">مسح</button></div>
     <div id="patientFilters" class="filters">
@@ -223,5 +223,6 @@
 <div id="toast" class="toast"></div>
 <script src="./or-core.js"></script>
 <script src="./or-ui.js"></script>
+<script src="./or-followup.js"></script>
 </body>
 </html>
