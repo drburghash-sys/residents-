@@ -80,9 +80,9 @@
 
   <section id="residentsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">المقيمون وإحصائية أيام العمليات</div><div class="sub">العدل يدوي. التطبيق يعرض الأيام المنفردة والمشتركة فقط لتساعدك في القرار.</div></div><button class="btn dark" onclick="addResidentPrompt()">+ مقيم</button></div>
+      <div class="row"><div><div class="name">المقيمون وأيام العمليات والتعويض</div><div class="sub">العدل والتعويض يدويان. إذا تعذر حضور يوم العمليات بسبب تعارض رسمي في الجدول، أضف للمقيم +1 تعويض واستخدمه لاحقًا عند إعطائه يومًا بديلًا.</div></div><button class="btn dark" onclick="addResidentPrompt()">+ مقيم</button></div>
       <div class="field monthPick" style="margin-top:10px"><label>الشهر</label><input id="residentMonth" type="month" onchange="renderResidents()"></div>
-      <div class="resTableHead"><span>المقيم</span><span>منفرد</span><span>مشترك</span><span>حالات حضّرها</span><span>عمليات أجراها</span><span>إجراء</span></div>
+      <div class="resTableHead"><span>المقيم</span><span>منفرد</span><span>مشترك</span><span>حالات حضّرها</span><span>عمليات أجراها</span><span>التعويض / إجراء</span></div>
       <div id="residentStatsList"></div>
     </div>
   </section>
@@ -224,5 +224,6 @@
 <script src="./or-core.js"></script>
 <script src="./or-ui.js"></script>
 <script src="./or-followup.js"></script>
+<script src="./or-rules.js"></script>
 </body>
 </html>
