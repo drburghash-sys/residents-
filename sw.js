@@ -1,5 +1,5 @@
-const CACHE="unified-surgery-v1-20260929c";
-const ASSETS=["./","./index.html","./style.css","./seed.js","./app.js","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
+const CACHE="surgery-or-days-v2-20260930a";
+const ASSETS=["./","./index.html","./or-style.css","./or-core.js","./or-ui.js","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([
   self.clients.claim(),
