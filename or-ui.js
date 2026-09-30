@@ -196,6 +196,12 @@ function saveLinkCase(){
   renderAll();
   if($("dayModal").classList.contains("show"))renderDayModal();
 }
+function toggleDayRole(id){
+  const c=getCase(id);if(!c||c.completedAt)return;
+  c.dayRole=c.dayRole==="reserve"?"main":"reserve";c.updatedAt=nowIso();
+  logEvent("day_role",c,c.preparedBy||"","تغيير الحالة إلى "+(c.dayRole==="reserve"?"احتياط":"أساسي"));
+  renderAll();if($("dayModal").classList.contains("show"))renderDayModal();
+}
 function unlinkCase(id){
   const c=getCase(id);if(!c||c.completedAt)return;
   if(!confirm("إرجاع الحالة إلى Patient Pool؟ سيبقى مستوى تجهيزها كما هو."))return;
@@ -230,7 +236,7 @@ function patientCardHtml(c){
   return '<div class="card caseCard"><div class="row"><div><div class="name">'+esc(c.patientName||"—")+'</div><div class="sub">MRN '+esc(c.mrn||"—")+' · '+esc(pathLabel(c.pathway))+' · '+esc(c.diagnosis||"")+'</div></div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge '+r.key+'">'+esc(r.label)+'</span><span class="badge '+stateBadge+'">'+esc(stateText)+'</span></div></div>'+
     '<div class="caseMeta"><div><b>العملية</b>'+esc(c.procedure||"—")+'</div><div><b>يوم العمليات</b>'+esc(d?gregDate(d.date):"—")+'</div><div><b>حضّرها</b>'+esc(c.preparedBy||"—")+'</div><div><b>المالك القديم</b>'+esc(c.legacyResidentOwner||"—")+'</div></div>'+
     '<div class="missing">'+(r.missing.length?r.missing.map(function(x){return '<span class="miss">'+esc(x.label)+'</span>'}).join(""):'<span class="miss done">التجهيز مكتمل</span>')+'</div>'+
-    '<div class="actions"><button class="btn secondary" onclick="openCase(\''+c.id+'\')">تعديل التجهيز</button>'+(c.orDayId?'<button class="btn dark" onclick="openDay(\''+c.orDayId+'\')">فتح يوم العمليات</button>':'')+'</div></div>';
+    '<div class="actions">'+(!c.completedAt&&c.pathway!=="emergency"?'<button class="btn secondary" onclick="openCase(\''+c.id+'\')">تعديل التجهيز</button>':'')+(c.orDayId?'<button class="btn dark" onclick="openDay(\''+c.orDayId+'\')">فتح يوم العمليات</button>':'')+'</div></div>';
 }
 function editorRow(k,l,x){
   return '<div class="checkitem"><span>'+l+'</span><label><input type="checkbox" data-req="'+k+'" '+(x.required?"checked":"")+' onchange="syncDoneDisabled(\''+k+'\')"> مطلوب</label><label><input type="checkbox" data-done="'+k+'" '+(x.done?"checked":"")+' '+(!x.required?"disabled":"")+'> تم</label></div>';
