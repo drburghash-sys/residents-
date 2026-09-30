@@ -479,6 +479,7 @@ function buildReadinessReport(){
       t+="الموقع: Patient Pool\n";
     }
     t+="النواقص: "+(r.key==="ready"?"لا يوجد — مكتمل التجهيز":r.missing.map(function(x){return x.label}).join("، "))+"\n";
+    if(c.consultantPrepared)t+="ملاحظة: تجهيز الاستشاري — المقيم مساعد فقط\n";
     t+="──────────────\n";
   });
   if(!list.length)t+="لا توجد حالات نشطة.\n";
