@@ -115,9 +115,9 @@
       </div>
     </div>
     <div class="card">
-      <div class="name">تقرير الجاهزية</div><div class="sub">يعرض Patient Pool والقوائم النشطة حسب DSU / Elective وبقية الأنواع.</div>
+      <div class="name">جميع الحالات + توزيع أيام العمليات</div><div class="sub">رسالة واحدة للقروب: اسم المريض، MRN، العملية، جميع النواقص، ثم توزيع أيام العمليات في أسفل الرسالة.</div>
       <textarea id="readinessReport" class="reportbox" readonly></textarea>
-      <div class="actions"><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ التقرير</button></div>
+      <div class="actions"><button class="btn dark" onclick="shareReadinessReport()">مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ الرسالة</button></div>
     </div>
     <div class="card"><div class="name">سجل الحركة</div><div id="historyList" style="margin-top:10px"></div></div>
   </section>
