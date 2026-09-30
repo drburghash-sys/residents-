@@ -215,6 +215,11 @@ function setPatientFilter(el){
   el.classList.add("active");patientFilter=el.dataset.f;renderPatients();
 }
 function renderPatients(){
+  const active=activePatientCases();
+  if($("pDsuCount"))$("pDsuCount").textContent=active.filter(function(c){return c.pathway==="day"}).length;
+  if($("pElectiveCount"))$("pElectiveCount").textContent=active.filter(function(c){return c.pathway==="elective"}).length;
+  if($("pReadyCount"))$("pReadyCount").textContent=active.filter(function(c){return readiness(c).key==="ready"}).length;
+  if($("pTotalCount"))$("pTotalCount").textContent=active.length;
   const q=String($("patientSearch").value||"").trim().toLowerCase();
   let list=state.cases.filter(function(c){
     if(patientFilter==="archive")return c.archived||!!c.completedAt;
