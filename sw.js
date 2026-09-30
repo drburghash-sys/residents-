@@ -1,4 +1,4 @@
-const CACHE="surgery-or-days-v2-20260930h";
+const CACHE="surgery-or-days-v2-20260930i";
 const ASSETS=["./","./index.html","./or-style.css","./or-core.js","./or-ui.js","./or-followup.js","./or-rules.js","./or-fixes.js","./or-nativepdf.js","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([
