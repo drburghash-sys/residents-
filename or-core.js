@@ -49,7 +49,8 @@ function migrateV1(old){
     }
     c.history=c.history||[];
     c.orDayId=c.orDayId||"";
-    c.preparedBy=c.preparedBy||"";
+    c.followUpBy=c.followUpBy||c.preparedBy||"";
+    if(!c.preparedBy&&c.followUpBy)c.preparedBy=c.followUpBy;
     c.dayRole=c.dayRole||"main";
     if(c.completedAt){
       c.archived=true;
@@ -200,6 +201,9 @@ function generateStandardDays(ym){
 }
 function compatiblePoolForDay(day){
   return poolCases().filter(function(c){
+    if(!c.followUpBy)return false;
+    if(day.residents.indexOf(c.followUpBy)<0)return false;
+    if(readiness(c).key!=="ready")return false;
     if(day.kind==="dsu")return c.pathway==="day";
     if(day.kind==="elective")return c.pathway==="elective";
     return c.pathway!=="emergency";
