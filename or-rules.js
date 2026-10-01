@@ -128,7 +128,6 @@
 
   window.compatiblePoolForDay=function(day){
     return poolCases().filter(function(c){
-      if(readiness(c).key!=="ready")return false;
       if(c.consultantPrepared){
         if(day.kind==="dsu")return c.pathway==="day";
         if(day.kind==="elective")return c.pathway==="elective";
@@ -159,7 +158,6 @@
     const id=linkingCaseId||document.getElementById("linkCaseSelect").value;
     const c=getCase(id);if(!c){alert("اختر حالة.");return}
     if(!c.followUpBy){alert("يجب أولًا تحديد من يتابع الحالة.");return}
-    if(readiness(c).key!=="ready"){alert("لا يمكن تحديد الحالة ليوم العمليات قبل اكتمال تجهيزها.");return}
     if(!c.consultantPrepared&&d.residents.indexOf(c.followUpBy)<0){alert("هذه الحالة يتابعها مقيم غير مشارك في يوم العمليات المحدد.");return}
     if(!linkingCaseId&&c.orDayId){alert("الحالة مرتبطة بيوم آخر.");return}
     c.orDayId=d.id;c.preparedBy=c.followUpBy;c.dayRole=document.getElementById("linkRole").value;c.updatedAt=nowIso();
