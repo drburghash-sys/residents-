@@ -1,5 +1,5 @@
-const CACHE="surgery-or-days-v2-20261001a";
-const ASSETS=["./","./index.html","./or-style.css","./or-core.js","./or-ui.js","./or-followup.js?v=20260930m","./or-rules.js","./or-fixes.js","./or-nativepdf.js?v=20260930m","./or-patient-actions.js?v=20261001a","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
+const CACHE="surgery-or-days-v2-20261001b";
+const ASSETS=["./","./index.html","./or-style.css","./or-core.js","./or-ui.js","./or-followup.js?v=20260930m","./or-rules.js","./or-fixes.js","./or-nativepdf.js?v=20260930m","./or-patient-actions.js?v=20261001a","./or-link-guidance.js?v=20261001b","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener("activate",e=>e.waitUntil(Promise.all([
   self.clients.claim(),
