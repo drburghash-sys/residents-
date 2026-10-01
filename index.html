@@ -52,7 +52,7 @@
 
   <section id="patientsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة تبدأ متاحة في Patient Pool، ثم تُحجز لمقيم واحد للمتابعة والتجهيز. بعد اكتمالها فقط يمكن ربطها بيوم عمليات يشارك فيه ذلك المقيم.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
+      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة تبدأ متاحة في Patient Pool، ثم تُحجز لمقيم واحد للمتابعة والتجهيز. بعد تحديد المقيم يمكن ربطها بأحد أيام عملياته حتى لو كانت التجهيزات لم تكتمل بعد، وتظهر النواقص داخل القائمة.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
     </div>
     <div class="stats" id="patientStats">
       <div class="stat"><b id="pDsuCount">0</b><span>حالات DSU</span></div>
@@ -232,10 +232,10 @@
 <script src="./or-core.js"></script>
 <script src="./or-ui.js"></script>
 <script src="./or-followup.js?v=20260930m"></script>
-<script src="./or-rules.js"></script>
+<script src="./or-rules.js?v=20261001c"></script>
 <script src="./or-fixes.js"></script>
 <script src="./or-nativepdf.js?v=20260930m"></script>
 <script src="./or-patient-actions.js?v=20261001a"></script>
-<script src="./or-link-guidance.js?v=20261001b"></script>
+<script src="./or-link-guidance.js?v=20261001c"></script>
 </body>
 </html>
