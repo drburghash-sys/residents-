@@ -41,7 +41,9 @@
     });
     const followedReady=followed.filter(function(c){return readiness(c).key==="ready"});
     const followedNotReady=followed.filter(function(c){return readiness(c).key!=="ready"});
-    const consultantReady=pool.filter(function(c){return c.consultantPrepared&&readiness(c).key==="ready"});
+    const consultantCases=pool.filter(function(c){return c.consultantPrepared});
+    const consultantReady=consultantCases.filter(function(c){return readiness(c).key==="ready"});
+    const consultantNotReady=consultantCases.filter(function(c){return readiness(c).key!=="ready"});
     const list=compatiblePoolForDay(d);
 
     const info=document.getElementById("linkCaseDayInfo");
@@ -49,16 +51,18 @@
       '<b>'+esc(gregDate(d.date))+' — '+esc(dayKindLabel(d.kind,d))+'</b><br>'+
       'مقيمو اليوم: <b>'+esc(residents.join(" + "))+'</b><br>'+
       'حالات تحت متابعتهم: <b>'+followed.length+'</b> · جاهزة: <b>'+followedReady.length+'</b> · غير جاهزة: <b>'+followedNotReady.length+'</b>'+
-      (consultantReady.length?' · تجهيز الاستشاري الجاهز: <b>'+consultantReady.length+'</b>':'')+
-      (!list.length?'<div style="margin-top:8px;padding:9px;border-radius:10px;background:#fff4df;color:#805000"><b>المقيم موجود، لكن لا توجد حالة جاهزة تحت متابعته.</b><br>من صفحة المرضى: يختار المقيم الحالة للمتابعة أولًا، ثم يُكمل نواقصها. بعد أن تصبح جاهزة ستظهر هنا تلقائيًا.<br><button class="btn secondary" style="margin-top:7px" onclick="goToPatientPoolForFollowup()">اذهب إلى Patient Pool</button></div>':'');
+      (consultantCases.length?' · تجهيز الاستشاري: <b>'+consultantCases.length+'</b> (جاهز '+consultantReady.length+' / غير جاهز '+consultantNotReady.length+')':'')+
+      (!list.length?'<div style="margin-top:8px;padding:9px;border-radius:10px;background:#fff4df;color:#805000"><b>لا توجد حالات تحت متابعة مقيمي هذا اليوم.</b><br>من صفحة المرضى يجب أولًا تحديد المقيم المسؤول عن متابعة الحالة. لا يشترط أن تكون الحالة جاهزة حتى تظهر هنا.<br><button class="btn secondary" style="margin-top:7px" onclick="goToPatientPoolForFollowup()">اذهب إلى Patient Pool</button></div>':'');
 
     const sel=document.getElementById("linkCaseSelect");
     sel.disabled=!list.length;
     sel.onchange=syncLinkCaseOwner;
     sel.innerHTML=list.length?list.map(function(c){
       const owner=c.consultantPrepared?"الاستشاري":(c.followUpBy||"غير محدد");
-      return '<option value="'+esc(c.id)+'">'+esc(c.mrn||"—")+' — '+esc(c.patientName||"—")+' — '+esc(c.procedure||"")+' — متابعة '+esc(owner)+'</option>';
-    }).join(""):'<option value="">لا توجد حالات مؤهلة حاليًا</option>';
+      const rr=readiness(c);
+      const status=rr.key==="ready"?"جاهز":"غير جاهز — ناقص "+rr.missing.length;
+      return '<option value="'+esc(c.id)+'">'+esc(c.mrn||"—")+' — '+esc(c.patientName||"—")+' — '+esc(c.procedure||"")+' — '+esc(status)+' — متابعة '+esc(owner)+'</option>';
+    }).join(""):'<option value="">لا توجد حالات تحت متابعة مقيمي هذا اليوم</option>';
 
     document.getElementById("linkRole").value="main";
     if(list.length)syncLinkCaseOwner();
