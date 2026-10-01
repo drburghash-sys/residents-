@@ -123,6 +123,13 @@
       </div>
     </div>
     <div class="card">
+      <div class="name">حالات مرتبطة باسم المقيم</div>
+      <div class="sub">اختر مقيمًا لإرسال حالاته فقط، أو اختر كل المقيمين لإرسال الحالات مجمعة تحت اسم كل مقيم.</div>
+      <div class="field" style="margin:10px 0"><label>المقيم</label><select id="residentShareSelect" onchange="updateResidentCasesReport()"><option value="all">كل المقيمين</option></select></div>
+      <textarea id="residentCasesReport" class="reportbox" readonly></textarea>
+      <div class="actions"><button class="btn dark" onclick="shareResidentCases()">مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('residentCasesReport')">نسخ</button></div>
+    </div>
+    <div class="card">
       <div class="name">جميع الحالات + توزيع أيام العمليات</div><div class="sub">رسالة واحدة للقروب: اسم المريض، MRN، العملية، جميع النواقص، ثم توزيع أيام العمليات في أسفل الرسالة.</div>
       <textarea id="readinessReport" class="reportbox" readonly></textarea>
       <div class="actions"><button class="btn dark" onclick="shareReadinessReport()">مشاركة للقروب</button><button class="btn secondary" onclick="copyTextArea('readinessReport')">نسخ الرسالة</button></div>
@@ -237,5 +244,6 @@
 <script src="./or-nativepdf.js?v=20260930m"></script>
 <script src="./or-patient-actions.js?v=20261001a"></script>
 <script src="./or-link-guidance.js?v=20261001c"></script>
+<script src="./or-resident-share.js?v=20261001d"></script>
 </body>
 </html>
