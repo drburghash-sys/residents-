@@ -386,7 +386,7 @@ function renderMonthlyReport(){
   (state.legacyMonthlyRecovered||[]).filter(function(x){return x.month===ym}).forEach(function(x){
     for(let i=0;i<Number(x.count||1);i++)a.push({id:"legacy-"+i,pathway:x.pathway,actualProcedure:x.procedure,procedure:x.procedure,operationPoints:Number(x.points||0),completedAt:ym+"-01T00:00:00",orHours:0,legacyStatOnly:true});
   });
-  const groups=[["Elective","elective"],["Inpatient","inpatient"],["Emergency","emergency"],["Day Surgery","day"],["Minor","minor"]];
+  const groups=[["Elective","elective"],["Inpatient","inpatient"],["طارئة","emergency"],["Day Surgery","day"],["Minor","minor"]];
   let totalPts=0;
   $("monthlyStats").innerHTML=groups.map(function(g){
     const arr=a.filter(function(c){return c.pathway===g[1]}),pts=arr.reduce(function(z,c){return z+Number(c.operationPoints==null?operationPointsFor(c,c.emergencyOptimization):c.operationPoints)},0);
