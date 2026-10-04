@@ -23,7 +23,7 @@ function blankState(){
     orDays:[],
     events:[],
     legacyMonthlyRecovered:[],
-    settings:{groupTitle:"General Surgery Residents",includeNames:true,lastBackupAt:""},
+    settings:{groupTitle:"General Surgery Residents",includeNames:true,lastBackupAt:"",dsuWeekday:0,electiveWeekday:4},
     createdAt:nowIso()
   };
 }
@@ -89,6 +89,8 @@ function normalizeV2(s){
   s.settings.groupTitle=s.settings.groupTitle||"General Surgery Residents";
   if(s.settings.includeNames==null)s.settings.includeNames=true;
   if(s.settings.lastBackupAt==null)s.settings.lastBackupAt="";
+  if(s.settings.dsuWeekday==null)s.settings.dsuWeekday=0;
+  if(s.settings.electiveWeekday==null)s.settings.electiveWeekday=4;
   s.residents.forEach(function(r){if(r.active==null)r.active=true});
   s.orDays.forEach(function(d){
     d.residents=Array.isArray(d.residents)?d.residents:[];
