@@ -62,7 +62,7 @@
 
   <section id="patientsSection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة تبدأ متاحة في Patient Pool، ثم تُحجز لمقيم واحد للمتابعة والتجهيز. بعد تحديد المقيم يمكن ربطها بأحد أيام عملياته حتى لو كانت التجهيزات لم تكتمل بعد، وتظهر النواقص داخل القائمة.</div></div><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div>
+      <div class="row"><div><div class="name">Patient Pool</div><div class="sub">الحالة تبدأ متاحة في Patient Pool، ثم تُحجز لمقيم واحد للمتابعة والتجهيز. بعد تحديد المقيم يمكن ربطها بأحد أيام عملياته حتى لو كانت التجهيزات لم تكتمل بعد، وتظهر النواقص داخل القائمة.</div></div><div class="actions"><button class="btn danger" onclick="openEmergencyOperation()">🚨 تسجيل عملية طارئة</button><button class="btn dark" onclick="openCase('')">+ حالة جديدة</button></div></div>
     </div>
     <div class="stats" id="patientStats">
       <div class="stat"><b id="pDsuCount">0</b><span>حالات DSU</span></div>
@@ -107,8 +107,7 @@
 
   <section id="monthlySection" style="display:none">
     <div class="card">
-      <div class="row"><div><div class="name">التقرير الشهري للعمليات</div><div class="sub">يعتمد فقط على العمليات التي سُجل أنها تمت فعليًا، مع الحفاظ على السجل القديم.</div></div>
-      <div class="field monthPick"><label>الشهر</label><input id="monthlyMonth" type="month" onchange="renderMonthlyReport()"></div></div>
+      <div class="row"><div><div class="name">التقرير الشهري للعمليات</div><div class="sub">يعتمد فقط على العمليات التي سُجل أنها تمت فعليًا، مع الحفاظ على السجل القديم.</div></div><div class="actions"><button class="btn danger" onclick="openEmergencyOperation()">🚨 تسجيل عملية طارئة</button><div class="field monthPick"><label>الشهر</label><input id="monthlyMonth" type="month" onchange="renderMonthlyReport()"></div></div></div>
     </div>
     <div id="monthlyStats" class="monthlyStats"></div>
     <div class="card">
@@ -196,7 +195,7 @@
   <div class="grid" style="margin-top:12px">
     <div class="field"><label>اسم المريض</label><input id="patientName"></div>
     <div class="field"><label>رقم الملف MRN</label><input id="mrn"></div>
-    <div class="field"><label>نوع الحالة</label><select id="pathway"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="minor">Minor</option></select></div>
+    <div class="field"><label>نوع الحالة</label><select id="pathway"><option value="elective">Elective</option><option value="day">DSU / Day Surgery</option><option value="inpatient">Inpatient</option><option value="minor">Minor</option><option value="emergency">طارئة — تسجل مباشرة بعد العملية</option></select></div>
     <div class="field"><label>التشخيص</label><input id="diagnosis"></div>
     <div class="field"><label>العملية المقترحة</label><input id="procedure"></div>
   </div>
@@ -256,5 +255,6 @@
 <script src="./or-link-guidance.js?v=20261001c"></script>
 <script src="./or-resident-share.js?v=20261001d"></script>
 <script src="./or-flex-schedule.js?v=20261004a"></script>
+<script src="./or-completion-emergency.js?v=20261004b"></script>
 </body>
 </html>
