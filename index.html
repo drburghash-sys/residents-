@@ -31,11 +31,21 @@
   <section id="scheduleSection">
     <div class="card">
       <div class="row">
-        <div><div class="name">جدول أيام العمليات الشهري</div><div class="sub">الأحد DSU والخميس Elective. اليوم كامل لمقيم واحد أو أكثر، وعدد الحالات غير ثابت.</div></div>
+        <div><div class="name">جدول أيام العمليات الشهري</div><div class="sub">حدد اليوم الأسبوعي لـ DSU وElective حسب جدول العمليات. اليوم كامل لمقيم واحد أو أكثر، وعدد الحالات غير ثابت.</div></div>
         <div class="field monthPick"><label>الشهر</label><input id="scheduleMonth" type="month" onchange="renderAll()"></div>
       </div>
+      <div class="grid" style="margin-top:12px">
+        <div class="field"><label>اليوم الأسبوعي لـ DSU</label><select id="dsuWeekdaySelect">
+          <option value="0">الأحد</option><option value="1">الاثنين</option><option value="2">الثلاثاء</option><option value="3">الأربعاء</option><option value="4">الخميس</option><option value="5">الجمعة</option><option value="6">السبت</option>
+        </select></div>
+        <div class="field"><label>اليوم الأسبوعي لـ Elective</label><select id="electiveWeekdaySelect">
+          <option value="0">الأحد</option><option value="1">الاثنين</option><option value="2">الثلاثاء</option><option value="3">الأربعاء</option><option value="4">الخميس</option><option value="5">الجمعة</option><option value="6">السبت</option>
+        </select></div>
+      </div>
+      <div id="weeklyDaysSummary" class="sub" style="margin-top:8px"></div>
       <div class="actions">
-        <button class="btn dark" onclick="createStandardDays()">إنشاء الأحد والخميس</button>
+        <button class="btn secondary" onclick="saveWeeklyDaySettings()">حفظ وتطبيق الأيام على الشهر</button>
+        <button class="btn dark" onclick="createStandardDays()">إنشاء الأيام الأساسية</button>
         <button class="btn violet" onclick="openAdditionalDay()">+ يوم عمليات إضافي</button>
         <button class="btn secondary" onclick="shareMonthlySchedule()">إرسال جدول الشهر للقروب</button>
       </div>
