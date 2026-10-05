@@ -43,6 +43,24 @@
     toastMsg("تم إرجاع الحالة إلى Patient Pool — "+readiness(c).label);
   };
 
+  window.deleteEmergencyOperation=function(id){
+    const c=getCase(id);
+    if(!c||c.pathway!=="emergency"||!c.completedAt)return;
+    const label=(c.patientName||c.mrn||c.procedure||"الحالة الطارئة");
+    if(!confirm("حذف العملية الطارئة المسجلة بالخطأ: "+label+"؟\nسيتم حذفها نهائيًا من التقرير الشهري والنقاط."))return;
+
+    state.events.push(eventObj(
+      "emergency_deleted",
+      c.id,
+      c.performedBy||"",
+      "حذف عملية طارئة مسجلة بالخطأ — "+(c.actualProcedure||c.procedure||"—")+" — "+Number(c.operationPoints||0)+" نقاط"
+    ));
+    state.cases=state.cases.filter(function(x){return x.id!==id});
+    persist();
+    renderAll();
+    toastMsg("تم حذف العملية الطارئة من التقرير الشهري");
+  };
+
   function rebuildCompletedCases(){
     const list=document.getElementById("monthlyCaseList");
     if(!list)return;
@@ -69,14 +87,18 @@
       const undo=canUndoAnyCompleted(c)
         ?'<button class="btn warn" style="margin-top:8px" onclick="undoCompletedOperation(\''+c.id+'\')">↩️ إلغاء تمت وإرجاع للمخزون</button>'
         :"";
-      const opt=c.pathway==="emergency"
-        ?' · '+(c.emergencyOptimization==="non_optimized"?"Not Optimized — 4 points":"Optimized — 3 points")
+      const emergencyDelete=c.pathway==="emergency"
+        ?'<button class="btn danger" style="margin-top:8px" onclick="deleteEmergencyOperation(\''+c.id+'\')">🗑️ حذف العملية الطارئة</button>'
         :"";
+      const details=c.pathway==="emergency"
+        ?esc(c.patientName||c.mrn||"—")+' · '+esc(pathLabel(c.pathway))+' · '+
+          (c.emergencyOptimization==="non_optimized"?"Not Optimized":"Optimized")+' · '+
+          Number(c.operationPoints||0)+' points · '+new Date(c.completedAt).toLocaleDateString("en-GB")
+        :esc(c.patientName||"—")+' · '+esc(pathLabel(c.pathway))+' · '+Number(c.operationPoints||0)+' points · '+
+          new Date(c.completedAt).toLocaleDateString("en-GB");
       html.push(
         '<div class="mini"><b>'+esc(c.actualProcedure||c.procedure||"—")+'</b>'+
-        esc(c.patientName||"—")+' · '+esc(pathLabel(c.pathway))+' · '+Number(c.operationPoints||0)+' points · '+
-        new Date(c.completedAt).toLocaleDateString("en-GB")+opt+
-        undo+'</div>'
+        details+undo+emergencyDelete+'</div>'
       );
     });
     legacy.forEach(function(c){
