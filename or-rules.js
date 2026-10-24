@@ -115,7 +115,7 @@
     const old=c.followUpBy||"";
     if(old===next&&!!c.consultantPrepared===consultant){closeModal("claimModal");return}
     const d=c.orDayId?getDay(c.orDayId):null;
-    if(d&&!consultant&&(!next||d.residents.indexOf(next)<0)){
+    if(d&&!d.consultantResponsible&&!consultant&&(!next||d.residents.indexOf(next)<0)){
       if(!confirm("المقيم الجديد غير مشارك في يوم العمليات الحالي. سيتم إرجاع الحالة إلى Patient Pool مع بقاء التجهيز. متابعة؟"))return;
       c.orDayId="";c.dayRole="main";
     }
