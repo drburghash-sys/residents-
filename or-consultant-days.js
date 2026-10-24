@@ -35,23 +35,32 @@
     if(help)help.textContent="اختر الاستشاري أو مقيمًا واحدًا أو أكثر. اختيار الاستشاري لا يُحسب ضمن أيام المقيمين.";
   };
 
-  const oldSaveAssignments=window.saveDayAssignments;
   window.saveDayAssignments=function(){
     const d=getDay(currentDayId);if(!d)return;
     const list=document.getElementById("dayResidentChecks");
     const cb=document.getElementById("dayConsultantResponsible");
     const consultant=!!(cb&&cb.checked);
-    const residentInputs=Array.from(list.querySelectorAll('input[type="checkbox"]')).filter(x=>x!==cb);
-    if(consultant)residentInputs.forEach(x=>{x.checked=false});
-    const selected=residentInputs.filter(x=>x.checked).map(x=>x.value);
-    const removed=d.residents.filter(name=>!selected.includes(name));
-    const affected=dayCases(d.id,false).filter(c=>removed.includes(c.followUpBy)&&!c.consultantPrepared);
-    if(affected.length&&!confirm("سيؤدي تغيير مسؤول اليوم إلى إعادة "+affected.length+" حالة يتابعها مقيم مستبعد إلى Patient Pool مع بقاء متابعتها. هل تريد المتابعة؟"))return;
+    const inputs=Array.from(list.querySelectorAll('input[type="checkbox"]')).filter(x=>x!==cb);
+    const selected=consultant?[]:inputs.filter(x=>x.checked).map(x=>x.value);
+    // Consultant takeover keeps all patients on the same list and retains their follow-up owners.
+    // When reverting to resident ownership, return cases followed by an unselected resident to the pool.
+    const affected=consultant?[]:dayCases(d.id,false).filter(c=>
+      !c.consultantPrepared&&!!c.followUpBy&&!selected.includes(c.followUpBy));
+    if(affected.length&&!confirm("سيتم إرجاع "+affected.length+" حالة إلى Patient Pool لأن مقيم المتابعة ليس ضمن مسؤولي اليوم المختارين. ستبقى متابعة هذه الحالات محفوظة. متابعة؟"))return;
+    affected.forEach(c=>{
+      c.orDayId="";
+      c.dayRole="main";
+      c.preparedBy=c.followUpBy||"";
+      c.updatedAt=nowIso();
+    });
     d.consultantResponsible=consultant;
-    if(cb)cb.checked=false; // Never pass the role checkbox as a resident to the existing save handler.
-    oldSaveAssignments();
-    logEvent("day_owner",null,dayOwner(d),"مسؤول قائمة العمليات بتاريخ "+d.date+": "+dayOwner(d));
-    persist();
+    d.residents=selected;
+    logEvent("day_owner",null,dayOwner(d),
+      "تحديث مسؤول قائمة العمليات بتاريخ "+d.date+": "+dayOwner(d)+
+      (affected.length?" — إعادة "+affected.length+" حالة إلى المخزون":""));
+    closeModal("assignDayModal");
+    renderAll();
+    if(document.getElementById("dayModal").classList.contains("show"))renderDayModal();
   };
 
   const oldCard=window.dayCardHtml;
