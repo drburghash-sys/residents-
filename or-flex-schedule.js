@@ -51,7 +51,7 @@
   function isEmptyUnusedStandardDay(d){
     return (d.kind==="dsu"||d.kind==="elective") &&
       d.status!=="completed" &&
-      (!d.residents||!d.residents.length) &&
+      (!d.residents||!d.residents.length) && !d.consultantResponsible &&
       dayCases(d.id,true).length===0;
   }
 
