@@ -45,7 +45,7 @@
     // Consultant takeover keeps all patients on the same list and retains their follow-up owners.
     // When reverting to resident ownership, return cases followed by an unselected resident to the pool.
     const affected=consultant?[]:dayCases(d.id,false).filter(c=>
-      !c.consultantPrepared&&!!c.followUpBy&&!selected.includes(c.followUpBy));
+      !c.consultantPrepared&&!selected.includes(c.followUpBy));
     if(affected.length&&!confirm("سيتم إرجاع "+affected.length+" حالة إلى Patient Pool لأن مقيم المتابعة ليس ضمن مسؤولي اليوم المختارين. ستبقى متابعة هذه الحالات محفوظة. متابعة؟"))return;
     affected.forEach(c=>{
       c.orDayId="";
@@ -128,7 +128,7 @@
     const c=getCase(id);
     if(!c){alert("اختر حالة.");return}
     if(d.status==="completed"){alert("لا يمكن إضافة حالات إلى يوم مغلق.");return}
-    if(!c.followUpBy){alert("عين مسؤول متابعة الحالة أولًا من صفحة المرضى.");return}
+    if(!c.followUpBy&&!linkingCaseId){alert("عين مسؤول متابعة الحالة أولًا من صفحة المرضى.");return}
     if(!matchesType(c,d)){alert("نوع الحالة لا يناسب نوع يوم العمليات.");return}
     if(!linkingCaseId&&c.orDayId){alert("الحالة مرتبطة بيوم آخر.");return}
     c.orDayId=d.id;
