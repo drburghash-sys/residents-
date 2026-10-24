@@ -179,7 +179,7 @@
     if(days.length){
       days.forEach(function(d){
         line(gregDate(d.date)+" - "+dayKindLabel(d.kind,d),25,"700","#0b5266");
-        line("المقيمون: "+(d.residents.length?d.residents.join(" + "):"غير محدد"),23,"400","#222");
+        line((d.consultantResponsible?"مسؤول القائمة: الاستشاري":"المقيمون: "+(d.residents.length?d.residents.join(" + "):"غير محدد")),23,"400","#222");
         rule();
       });
     }else line("لا توجد أيام عمليات مسجلة لهذا الشهر.",26,"400","#555");
