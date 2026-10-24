@@ -54,7 +54,7 @@
     </div>
     <div class="stats">
       <div class="stat"><b id="sDays">0</b><span>أيام الشهر</span></div>
-      <div class="stat"><b id="sAssigned">0</b><span>تم تحديد المقيمين</span></div>
+      <div class="stat"><b id="sAssigned">0</b><span>تم تحديد المسؤول</span></div>
       <div class="stat"><b id="sUnassigned">0</b><span>بدون مقيم</span></div>
       <div class="stat"><b id="sAdditional">0</b><span>أيام إضافية</span></div>
     </div>
@@ -153,7 +153,7 @@
   <div class="row"><h2 id="dayModalTitle" style="margin:0"></h2><button class="btn secondary" onclick="closeModal('dayModal')">إغلاق</button></div>
   <div id="dayModalInfo" class="note info"></div>
   <div class="actions">
-    <button id="dayAssignBtn" class="btn secondary" onclick="openDayAssignments(currentDayId)">اختيار المقيمين</button>
+    <button id="dayAssignBtn" class="btn secondary" onclick="openDayAssignments(currentDayId)">اختيار مسؤول اليوم</button>
     <button id="dayAddCaseBtn" class="btn dark" onclick="openLinkCase()">+ إضافة حالة من Patient Pool</button>
     <button class="btn secondary" onclick="shareDay(currentDayId)">رسالة القروب</button>
     <button id="dayCloseBtn" class="btn warn" onclick="closeOperatingDay(currentDayId)">إغلاق يوم العمليات</button>
@@ -163,8 +163,8 @@
 </div></div>
 
 <div class="modal" id="assignDayModal"><div class="sheet">
-  <div class="row"><h2 id="assignDayTitle" style="margin:0">اختيار المقيمين</h2><button class="btn secondary" onclick="closeModal('assignDayModal')">إغلاق</button></div>
-  <div class="note info">يمكن اختيار مقيم واحد أو أكثر لنفس القائمة.</div>
+  <div class="row"><h2 id="assignDayTitle" style="margin:0">اختيار مسؤول اليوم</h2><button class="btn secondary" onclick="closeModal('assignDayModal')">إغلاق</button></div>
+  <div class="note info">يمكن اختيار الاستشاري أو مقيم واحد أو أكثر مسؤولًا عن قائمة اليوم.</div>
   <div id="dayResidentChecks" class="pickerList"></div>
   <div class="footer-actions"><button class="btn dark" onclick="saveDayAssignments()">حفظ</button></div>
 </div></div>
@@ -262,5 +262,6 @@
 <script src="./patient-plan.js?v=20261024b"></script>
 <script src="./or-patient-plan.js?v=20261024b"></script>
 <script src="./or-booking-policy.js?v=20261024c"></script>
+<script src="./or-consultant-days.js?v=20261024d"></script>
 </body>
 </html>
